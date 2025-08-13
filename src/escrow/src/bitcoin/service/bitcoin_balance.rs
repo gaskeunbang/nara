@@ -1,6 +1,6 @@
 use crate::bitcoin::BTC_CONTEXT;
 use ic_cdk::{
-    bitcoin_canister::{bitcoin_get_balance, GetBalanceRequest},
+    api::management_canister::bitcoin::{bitcoin_get_balance, GetBalanceRequest},
     update,
 };
 
@@ -9,11 +9,13 @@ use ic_cdk::{
 pub async fn bitcoin_balance(address: String) -> u64 {
     let ctx = BTC_CONTEXT.with(|ctx| ctx.get());
 
-    bitcoin_get_balance(&GetBalanceRequest {
+    let (balance,) = bitcoin_get_balance(GetBalanceRequest {
         address,
         network: ctx.network,
         min_confirmations: None,
     })
     .await
-    .unwrap()
+    .unwrap();
+
+    balance
 }

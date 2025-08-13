@@ -7,7 +7,7 @@ use bitcoin::{
     self, absolute::LockTime, blockdata::witness::Witness, hashes::Hash, transaction::Version,
     Address, Amount, OutPoint, ScriptBuf, Sequence, Transaction, TxIn, TxOut, Txid,
 };
-use ic_cdk::bitcoin_canister::{
+use ic_cdk::api::management_canister::bitcoin::{
     bitcoin_get_current_fee_percentiles, GetCurrentFeePercentilesRequest, Utxo,
 };
 use std::fmt;
@@ -144,7 +144,7 @@ pub fn build_transaction_with_fee(
 /// This function queries the Bitcoin network for recent fee percentiles and returns
 /// a balanced estimate suitable for typical transactions.
 pub async fn get_fee_per_byte(ctx: &BitcoinContext) -> u64 {
-    let fee_percentiles = bitcoin_get_current_fee_percentiles(&GetCurrentFeePercentilesRequest {
+    let (fee_percentiles,) = bitcoin_get_current_fee_percentiles(GetCurrentFeePercentilesRequest {
         network: ctx.network,
     })
     .await

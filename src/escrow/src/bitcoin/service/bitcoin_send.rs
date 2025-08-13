@@ -6,7 +6,7 @@ use crate::bitcoin::{
 };
 use bitcoin::{consensus::serialize, Address, PublicKey};
 use ic_cdk::{
-    bitcoin_canister::{
+    api::management_canister::bitcoin::{
         bitcoin_get_utxos, bitcoin_send_transaction, GetUtxosRequest, SendTransactionRequest,
     },
     trap, update,
@@ -23,40 +23,28 @@ pub async fn bitcoin_send(request: SendRequest) -> String {
         trap("Amount must be greater than 0");
     }
 
-    // Parse and validate the destination address. The address type needs to be
-    // valid for the Bitcoin network we are on.
     let dst_address = Address::from_str(&request.destination_address)
         .unwrap()
         .require_network(ctx.bitcoin_network)
         .unwrap();
 
-    // Unique derivation paths are used for every address type generated, to ensure
-    // each address has its own unique key pair. To generate a user-specific address,
-    // you would typically use a derivation path based on the user's identity or some other unique identifier.
     let derivation_path = DerivationPath::p2pkh(0, 0);
 
-    // Get the ECDSA public key of this smart contract at the given derivation path.
     let own_public_key = get_ecdsa_public_key(&ctx, derivation_path.to_vec_u8_path()).await;
 
-    // Convert the public key to the format used by the Bitcoin library.
     let own_public_key = PublicKey::from_slice(&own_public_key).unwrap();
 
-    // Generate a P2PKH address from the public key.
     let own_address = Address::p2pkh(own_public_key, ctx.bitcoin_network);
 
-    // Note that pagination may have to be used to get all UTXOs for the given address.
-    // For the sake of simplicity, it is assumed here that the `utxo` field in the response
-    // contains all UTXOs.
-    let own_utxos = bitcoin_get_utxos(&GetUtxosRequest {
+    let (utxos_resp,) = bitcoin_get_utxos(GetUtxosRequest {
         address: own_address.to_string(),
         network: ctx.network,
         filter: None,
     })
     .await
-    .unwrap()
-    .utxos;
+    .unwrap();
+    let own_utxos = utxos_resp.utxos;
 
-    // Build the transaction.
     let fee_per_byte = get_fee_per_byte(&ctx).await;
     let transaction = p2pkh::build_transaction(
         &ctx,
@@ -68,7 +56,6 @@ pub async fn bitcoin_send(request: SendRequest) -> String {
     )
     .await;
 
-    // Sign the transaction.
     let signed_transaction = p2pkh::sign_transaction(
         &ctx,
         &own_public_key,
@@ -79,14 +66,12 @@ pub async fn bitcoin_send(request: SendRequest) -> String {
     )
     .await;
 
-    // Send the transaction to the Bitcoin API.
-    bitcoin_send_transaction(&SendTransactionRequest {
+    bitcoin_send_transaction(SendTransactionRequest {
         network: ctx.network,
         transaction: serialize(&signed_transaction),
     })
     .await
     .unwrap();
 
-    // Return the transaction ID.
     signed_transaction.compute_txid().to_string()
 }

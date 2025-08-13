@@ -1,17 +1,18 @@
+type BitcoinNetwork = variant { mainnet; regtest; testnet };
 type GetUtxosResponse = record {
   next_page : opt blob;
   tip_height : nat32;
   tip_block_hash : blob;
   utxos : vec Utxo;
 };
-type Network = variant { mainnet; regtest; testnet };
 type Outpoint = record { txid : blob; vout : nat32 };
+type Result = variant { Ok : text; Err : text };
 type SendRequest = record {
   destination_address : text;
   amount_in_satoshi : nat64;
 };
 type Utxo = record { height : nat32; value : nat64; outpoint : Outpoint };
-service : (Network) -> {
+service : (BitcoinNetwork) -> {
   // Returns a legacy P2PKH (Pay-to-PubKey-Hash) address for this smart contract.
   // 
   // This address uses an ECDSA public key and encodes it in the legacy Base58 format.
@@ -27,4 +28,7 @@ service : (Network) -> {
   bitcoin_send : (SendRequest) -> (text);
   // Returns the UTXOs of the given Bitcoin address.
   bitcoin_utxos : (text) -> (GetUtxosResponse);
+  ethereum_address : () -> (Result);
+  ethereum_balance : (text) -> (Result);
+  ethereum_send : (text, nat) -> (Result);
 }

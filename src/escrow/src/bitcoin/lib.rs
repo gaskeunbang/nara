@@ -3,7 +3,7 @@ mod ecdsa;
 mod p2pkh;
 mod service;
 
-use ic_cdk::{bitcoin_canister::Network, init, post_upgrade};
+use ic_cdk::{api::management_canister::bitcoin::BitcoinNetwork, init, post_upgrade};
 use std::cell::Cell;
 
 /// Runtime configuration shared across all Bitcoin-related operations.
@@ -19,7 +19,7 @@ use std::cell::Cell;
 /// Bitcoin library use distinct network enum types.
 #[derive(Clone, Copy)]
 pub struct BitcoinContext {
-    pub network: Network,
+    pub network: BitcoinNetwork,
     pub bitcoin_network: bitcoin::Network,
     pub key_name: &'static str,
 }
@@ -29,7 +29,7 @@ pub struct BitcoinContext {
 thread_local! {
     static BTC_CONTEXT: Cell<BitcoinContext> = const {
         Cell::new(BitcoinContext {
-            network: Network::Testnet,
+            network: BitcoinNetwork::Testnet,
             bitcoin_network: bitcoin::Network::Testnet,
             key_name: "test_key_1",
         })
@@ -37,16 +37,16 @@ thread_local! {
 }
 
 /// Internal shared init logic used both by init and post-upgrade hooks.
-fn init_upgrade(network: Network) {
+fn init_upgrade(network: BitcoinNetwork) {
     let key_name = match network {
-        Network::Regtest => "dfx_test_key",
-        Network::Mainnet | Network::Testnet => "test_key_1",
+        BitcoinNetwork::Regtest => "dfx_test_key",
+        BitcoinNetwork::Mainnet | BitcoinNetwork::Testnet => "test_key_1",
     };
 
     let bitcoin_network = match network {
-        Network::Mainnet => bitcoin::Network::Bitcoin,
-        Network::Testnet => bitcoin::Network::Testnet,
-        Network::Regtest => bitcoin::Network::Regtest,
+        BitcoinNetwork::Mainnet => bitcoin::Network::Bitcoin,
+        BitcoinNetwork::Testnet => bitcoin::Network::Testnet,
+        BitcoinNetwork::Regtest => bitcoin::Network::Regtest,
     };
 
     BTC_CONTEXT.with(|ctx| {
@@ -61,14 +61,14 @@ fn init_upgrade(network: Network) {
 /// Smart contract init hook.
 /// Sets up the BitcoinContext based on the given IC Bitcoin network.
 #[init]
-pub fn init(network: Network) {
+pub fn init(network: BitcoinNetwork) {
     init_upgrade(network);
 }
 
 /// Post-upgrade hook.
 /// Reinitializes the BitcoinContext with the same logic as `init`.
 #[post_upgrade]
-fn upgrade(network: Network) {
+fn upgrade(network: BitcoinNetwork) {
     init_upgrade(network);
 }
 

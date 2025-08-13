@@ -1,6 +1,6 @@
 use crate::bitcoin::BTC_CONTEXT;
 use ic_cdk::{
-    bitcoin_canister::{bitcoin_get_utxos, GetUtxosRequest, GetUtxosResponse},
+    api::management_canister::bitcoin::{bitcoin_get_utxos, GetUtxosRequest, GetUtxosResponse},
     update,
 };
 
@@ -9,11 +9,13 @@ use ic_cdk::{
 pub async fn bitcoin_utxos(address: String) -> GetUtxosResponse {
     let ctx = BTC_CONTEXT.with(|ctx| ctx.get());
 
-    bitcoin_get_utxos(&GetUtxosRequest {
+    let (resp,) = bitcoin_get_utxos(GetUtxosRequest {
         address,
         network: ctx.network,
         filter: None,
     })
     .await
-    .unwrap()
+    .unwrap();
+
+    resp
 }

@@ -11,7 +11,7 @@ use bitcoin::{
     Address, AddressType, PublicKey, Transaction, Witness,
 };
 use ic_cdk::{
-    bitcoin_canister::{MillisatoshiPerByte, Utxo},
+    api::management_canister::bitcoin::{MillisatoshiPerByte, Utxo},
     trap,
 };
 use std::convert::TryFrom;

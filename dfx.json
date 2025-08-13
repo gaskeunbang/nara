@@ -10,7 +10,10 @@
           "name": "candid:service"
         }
       ],
-      "build": ["cargo build --target wasm32-unknown-unknown --release -p escrow", "candid-extractor target/wasm32-unknown-unknown/release/escrow.wasm > src/escrow/escrow.did"]
+      "build": [
+        "bash src/escrow/build.sh",
+        "candid-extractor target/wasm32-unknown-unknown/release/escrow.wasm > src/escrow/escrow.did"
+      ]
     },
     "frontend": {
       "dependencies": ["escrow"],
@@ -23,8 +26,22 @@
     "build": {
       "args": "",
       "packtool": ""
+    },
+    "bitcoin": {
+      "enabled": true,
+      "nodes": ["127.0.0.1:18444"]
     }
   },
   "output_env_file": ".env",
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:4943",
+      "type": "ephemeral"
+    },
+    "ic": {
+      "providers": ["https://ic0.app"],
+      "type": "persistent"
+    }
+  },
   "version": 1
 }

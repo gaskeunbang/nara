@@ -1,0 +1,30 @@
+{
+  "canisters": {
+    "escrow": {
+      "candid": "src/escrow/escrow.did",
+      "wasm": "target/wasm32-unknown-unknown/release/escrow.wasm",
+      "package": "escrow",
+      "type": "custom",
+      "metadata": [
+        {
+          "name": "candid:service"
+        }
+      ],
+      "build": ["cargo build --target wasm32-unknown-unknown --release -p escrow", "candid-extractor target/wasm32-unknown-unknown/release/escrow.wasm > src/escrow/escrow.did"]
+    },
+    "frontend": {
+      "dependencies": ["escrow"],
+      "source": ["src/frontend/dist"],
+      "type": "assets",
+      "workspace": "nara_frontend"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}

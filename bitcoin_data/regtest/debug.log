@@ -2463,3 +2463,12 @@ CTransaction(hash=d7d0d61f39, ver=2, vin.size=1, vout.size=2, nLockTime=909)
 2025-08-13T08:09:13Z [default wallet] AddToWallet d7d0d61f39c4c0b486f053b529b529eac5f7563cab9586d76095312c6f17b070  update
 2025-08-13T08:10:10Z Adding fixed seed nodes as DNS doesn't seem to be available.
 2025-08-13T08:41:24Z Potential stale tip detected, will try using extra outbound peer (last tip update: 1931 seconds ago)
+2025-08-13T08:51:54Z Potential stale tip detected, will try using extra outbound peer (last tip update: 2561 seconds ago)
+2025-08-13T09:02:24Z Potential stale tip detected, will try using extra outbound peer (last tip update: 3191 seconds ago)
+2025-08-13T09:12:54Z Potential stale tip detected, will try using extra outbound peer (last tip update: 3821 seconds ago)
+2025-08-13T09:23:24Z Potential stale tip detected, will try using extra outbound peer (last tip update: 4451 seconds ago)
+2025-08-13T09:33:54Z Potential stale tip detected, will try using extra outbound peer (last tip update: 5081 seconds ago)
+2025-08-13T09:44:24Z Potential stale tip detected, will try using extra outbound peer (last tip update: 5711 seconds ago)
+2025-08-13T09:54:54Z Potential stale tip detected, will try using extra outbound peer (last tip update: 6341 seconds ago)
+2025-08-13T10:05:24Z Potential stale tip detected, will try using extra outbound peer (last tip update: 6971 seconds ago)
+2025-08-13T10:15:54Z Potential stale tip detected, will try using extra outbound peer (last tip update: 7601 seconds ago)

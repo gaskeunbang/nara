@@ -21,6 +21,9 @@ getrandom = { version = "*", default-features = false, features = ["custom"] }
 hex = "0.4.3"
 bitcoin = "0.32.5"
 leb128 = "0.2.5"
+num = "0.4.3"
+ic-ed25519 = "0.2.0"
+bs58 = "0.5.0"
 
 # Ethereum
 alloy = { git = "https://github.com/ic-alloy/ic-alloy.git", tag = "v0.3.5-icp.1", default-features = false, features = [
@@ -29,3 +32,45 @@ alloy = { git = "https://github.com/ic-alloy/ic-alloy.git", tag = "v0.3.5-icp.1"
   "json",
   "contract",
 ] }
+
+# Solana
+sol_rpc_client = { path = "src/solana/rpc/libs/client", features = ["ed25519"] }
+sol_rpc_types = { path = "src/solana/rpc/libs/types" }
+solana-hash = { version = "=2.3.0", default-features = false }
+solana-instruction = "=2.3.0"
+solana-keypair = "=2.2.3"
+solana-message = { version = "=2.4.0", default-features = false }
+solana-program = { version = "=2.3.0", default-features = false }
+solana-pubkey = { version = "=2.4.0", default-features = false }
+solana-signature = "=2.3.0"
+solana-system-interface = "1.0.0"
+solana-transaction = "=2.2.3"
+
+[dev-dependencies]
+solana-client = "=2.3.3"
+solana-commitment-config = "=2.2.1"
+solana-keypair = "=2.2.3"
+solana-rpc-client-nonce-utils = "=2.3.3"
+solana-signer = "=2.2.1"
+
+[patch.crates-io]
+solana-account = { git = "https://github.com/dfinity/solana-sdk", tag = "46ca4e2-js-feature-flag" }
+solana-clock = { git = "https://github.com/dfinity/solana-sdk", tag = "46ca4e2-js-feature-flag" }
+solana-commitment-config = { git = "https://github.com/dfinity/solana-sdk", tag = "46ca4e2-js-feature-flag" }
+solana-compute-budget-interface = { git = "https://github.com/dfinity/solana-sdk", tag = "46ca4e2-js-feature-flag" }
+solana-hash = { git = "https://github.com/dfinity/solana-sdk", tag = "46ca4e2-js-feature-flag" }
+solana-instruction = { git = "https://github.com/dfinity/solana-sdk", tag = "46ca4e2-js-feature-flag" }
+solana-keypair = { git = "https://github.com/dfinity/solana-sdk", tag = "46ca4e2-js-feature-flag" }
+solana-message = { git = "https://github.com/dfinity/solana-sdk", tag = "46ca4e2-js-feature-flag" }
+solana-nonce = { git = "https://github.com/dfinity/solana-sdk", tag = "46ca4e2-js-feature-flag" }
+solana-program = { git = "https://github.com/dfinity/solana-sdk", tag = "46ca4e2-js-feature-flag" }
+solana-pubkey = { git = "https://github.com/dfinity/solana-sdk", tag = "46ca4e2-js-feature-flag" }
+solana-reward-info = { git = "https://github.com/dfinity/solana-sdk", tag = "46ca4e2-js-feature-flag" }
+solana-signer = { git = "https://github.com/dfinity/solana-sdk", tag = "46ca4e2-js-feature-flag" }
+solana-signature = { git = "https://github.com/dfinity/solana-sdk", tag = "46ca4e2-js-feature-flag" }
+solana-transaction = { git = "https://github.com/dfinity/solana-sdk", tag = "46ca4e2-js-feature-flag" }
+solana-transaction-error = { git = "https://github.com/dfinity/solana-sdk", tag = "46ca4e2-js-feature-flag" }
+solana-sdk-ids = { git = "https://github.com/dfinity/solana-sdk", tag = "46ca4e2-js-feature-flag" }
+solana-system-interface = { git = "https://github.com/dfinity/solana-system-program", tag = "6185b40-js-feature-flag" }
+solana-sysvar = { git = "https://github.com/dfinity/solana-sdk", tag = "46ca4e2-js-feature-flag" }
+solana-sysvar-id = { git = "https://github.com/dfinity/solana-sdk", tag = "46ca4e2-js-feature-flag" }

@@ -58,17 +58,13 @@ fn init_upgrade(network: BitcoinNetwork) {
     });
 }
 
-/// Smart contract init hook.
-/// Sets up the BitcoinContext based on the given IC Bitcoin network.
-#[init]
-pub fn init(network: BitcoinNetwork) {
+/// Initialize Bitcoin module context.
+pub fn bitcoin_init(network: BitcoinNetwork) {
     init_upgrade(network);
 }
 
-/// Post-upgrade hook.
-/// Reinitializes the BitcoinContext with the same logic as `init`.
-#[post_upgrade]
-fn upgrade(network: BitcoinNetwork) {
+/// Reinitialize Bitcoin module context after upgrade.
+pub fn bitcoin_post_upgrade(network: BitcoinNetwork) {
     init_upgrade(network);
 }
 

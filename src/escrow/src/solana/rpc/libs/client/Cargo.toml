@@ -1,0 +1,55 @@
+[package]
+name = "sol_rpc_client"
+version = "1.0.0"
+description = "Client to interact with the SOL RPC canister"
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
+homepage.workspace = true
+license.workspace = true
+readme = "README.md"
+include = ["src", "Cargo.toml", "CHANGELOG.md", "LICENSE", "README.md"]
+
+[package.metadata.docs.rs]
+all-features = true
+
+[features]
+ed25519 = [
+    "ic-ed25519",
+    "solana-keypair",
+    "solana-message",
+    "solana-transaction",
+]
+
+[dependencies]
+async-trait = { workspace = true }
+bincode = { workspace = true }
+candid = { workspace = true }
+derive_more = { workspace = true }
+ic-cdk = { workspace = true }
+ic-ed25519 = { workspace = true, optional = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sol_rpc_types = { version = "1.0.0", path = "../types" }
+solana-account-decoder-client-types = { version = "=2.3.3", features = ["zstd"] }
+solana-hash = "=2.3.0"
+solana-instruction = "=2.3.0"
+solana-keypair = { version = "=2.2.3", optional = true }
+solana-message = { version = "=2.4.0", optional = true }
+solana-nonce = { version = "=2.2.1", features = ["serde"] }
+solana-program = "=2.3.0"
+solana-pubkey = "=2.4.0"
+solana-reward-info = "=2.2.1"
+solana-sdk-ids = "=2.2.1"
+solana-signature = "=2.3.0"
+solana-transaction = { version = "=2.2.3", optional = true }
+solana-transaction-error = "=2.2.1"
+solana-transaction-status-client-types = "=2.3.3"
+strum = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+assert_matches = { workspace = true }
+solana-keypair = "=2.2.3"
+solana-transaction = "=2.2.3"
+tokio = { workspace = true, features = ["full"] }

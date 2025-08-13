@@ -2461,3 +2461,4 @@ CTransaction(hash=d7d0d61f39, ver=2, vin.size=1, vout.size=2, nLockTime=909)
 2025-08-13T08:09:13Z UpdateTip: new best=2792b5bb8cd0c1234c70d68f3993aaf82766dba63de93b595e7db857d21417c3 height=910 version=0x20000000 log2_work=10.831307 tx=912 date='2025-08-13T08:09:13Z' progress=1.000000 cache=0.0MiB(4txo)
 2025-08-13T08:09:13Z [default wallet] AddToWallet 408b6dea7e5bdbcc33d55a0d4413bcfdcc21d1d15dd7aa5ffbafbba3ed0c18b2  new
 2025-08-13T08:09:13Z [default wallet] AddToWallet d7d0d61f39c4c0b486f053b529b529eac5f7563cab9586d76095312c6f17b070  update
+2025-08-13T08:10:10Z Adding fixed seed nodes as DNS doesn't seem to be available.

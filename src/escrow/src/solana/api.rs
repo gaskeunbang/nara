@@ -6,22 +6,13 @@ use std::str::FromStr;
 use super::{client, solana_wallet::SolanaWallet};
 
 #[ic_cdk::update]
-pub async fn solana_address() -> String {
-	let owner = ic_cdk::id();
-	let wallet = SolanaWallet::new(owner).await;
+pub async fn solana_address(sender: String) -> String {
+	let wallet = SolanaWallet::new_from_sender(sender).await;
 	wallet.solana_account().to_string()
 }
 
 #[ic_cdk::update]
-pub async fn solana_balance(account: Option<String>) -> Nat {
-	let account = match account {
-		Some(a) => a,
-		None => {
-			let owner = ic_cdk::id();
-			let wallet = SolanaWallet::new(owner).await;
-			wallet.solana_account().to_string()
-		}
-	};
+pub async fn solana_balance(account: String) -> Nat {
 	let public_key = Pubkey::from_str(&account).unwrap();
 	let balance = client()
 		.get_balance(public_key)

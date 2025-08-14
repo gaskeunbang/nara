@@ -28,4 +28,4 @@ dist/
 fetch/private_keys.json
 
 # Bitcoin regtest
-bitcoin_data/*
+bitcoin_data/

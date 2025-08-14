@@ -2472,3 +2472,32 @@ CTransaction(hash=d7d0d61f39, ver=2, vin.size=1, vout.size=2, nLockTime=909)
 2025-08-13T09:54:54Z Potential stale tip detected, will try using extra outbound peer (last tip update: 6341 seconds ago)
 2025-08-13T10:05:24Z Potential stale tip detected, will try using extra outbound peer (last tip update: 6971 seconds ago)
 2025-08-13T10:15:54Z Potential stale tip detected, will try using extra outbound peer (last tip update: 7601 seconds ago)
+2025-08-13T10:26:24Z Potential stale tip detected, will try using extra outbound peer (last tip update: 8231 seconds ago)
+2025-08-13T10:36:54Z Potential stale tip detected, will try using extra outbound peer (last tip update: 8861 seconds ago)
+2025-08-13T10:47:24Z Potential stale tip detected, will try using extra outbound peer (last tip update: 9491 seconds ago)
+2025-08-13T10:57:54Z Potential stale tip detected, will try using extra outbound peer (last tip update: 10121 seconds ago)
+2025-08-13T11:08:24Z Potential stale tip detected, will try using extra outbound peer (last tip update: 10751 seconds ago)
+2025-08-13T11:18:54Z Potential stale tip detected, will try using extra outbound peer (last tip update: 11381 seconds ago)
+2025-08-13T11:29:24Z Potential stale tip detected, will try using extra outbound peer (last tip update: 12011 seconds ago)
+2025-08-13T11:39:54Z Potential stale tip detected, will try using extra outbound peer (last tip update: 12641 seconds ago)
+2025-08-13T11:50:24Z Potential stale tip detected, will try using extra outbound peer (last tip update: 13271 seconds ago)
+2025-08-13T12:00:54Z Potential stale tip detected, will try using extra outbound peer (last tip update: 13901 seconds ago)
+2025-08-13T12:11:24Z Potential stale tip detected, will try using extra outbound peer (last tip update: 14531 seconds ago)
+2025-08-13T12:21:54Z Potential stale tip detected, will try using extra outbound peer (last tip update: 15161 seconds ago)
+2025-08-13T12:32:24Z Potential stale tip detected, will try using extra outbound peer (last tip update: 15791 seconds ago)
+2025-08-13T12:42:54Z Potential stale tip detected, will try using extra outbound peer (last tip update: 16421 seconds ago)
+2025-08-13T12:50:56Z tor: Thread interrupt
+2025-08-13T12:50:56Z Shutdown: In progress...
+2025-08-13T12:50:56Z opencon thread exit
+2025-08-13T12:50:56Z addcon thread exit
+2025-08-13T12:50:56Z torcontrol thread exit
+2025-08-13T12:50:56Z net thread exit
+2025-08-13T12:50:56Z msghand thread exit
+2025-08-13T12:50:56Z scheduler thread exit
+2025-08-13T12:50:56Z Dumped mempool: 4e-06s to copy, 0.004748s to dump
+2025-08-13T12:50:56Z FlushStateToDisk: write coins cache to disk (4 coins, 0kB) started
+2025-08-13T12:50:56Z FlushStateToDisk: write coins cache to disk (4 coins, 0kB) completed (0.00s)
+2025-08-13T12:50:56Z FlushStateToDisk: write coins cache to disk (0 coins, 0kB) started
+2025-08-13T12:50:56Z FlushStateToDisk: write coins cache to disk (0 coins, 0kB) completed (0.00s)
+2025-08-13T12:50:56Z [default wallet] Releasing wallet
+2025-08-13T12:50:56Z Shutdown: done

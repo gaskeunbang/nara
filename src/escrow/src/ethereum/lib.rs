@@ -46,6 +46,18 @@ pub(crate) fn create_derivation_path(principal: &Principal) -> Vec<Vec<u8>> {
     .collect()
 }
 
+// Build derivation path from an arbitrary unique string sender (not a Principal)
+pub(crate) fn create_derivation_path_from_sender(sender: &str) -> Vec<Vec<u8>> {
+    const SCHEMA_V1: u8 = 1;
+    [
+        ByteBuf::from(vec![SCHEMA_V1]),
+        ByteBuf::from(sender.as_bytes().to_vec()),
+    ]
+    .iter()
+    .map(|x| x.to_vec())
+    .collect()
+}
+
 pub(crate) fn auth_guard() -> Result<(), String> {
     match ic_cdk::caller() {
         caller if caller == Principal::anonymous() => {

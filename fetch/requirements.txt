@@ -1,2 +1,2 @@
-uagents
-ic-py
+uagents==0.22.6
+ic-py==1.0.1

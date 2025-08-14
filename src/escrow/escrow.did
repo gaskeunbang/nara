@@ -1,3 +1,4 @@
+type Addresses = record { solana : text; ethereum : text; bitcoin : text };
 type BitcoinNetwork = variant { mainnet; regtest; testnet };
 type CommitmentLevel = variant { finalized; confirmed; processed };
 type Ed25519KeyName = variant {
@@ -32,7 +33,7 @@ service : (BitcoinNetwork, opt InitArg) -> {
   // 
   // This address uses an ECDSA public key and encodes it in the legacy Base58 format.
   // It is supported by all bitcoin wallets and full nodes.
-  bitcoin_address : () -> (text);
+  bitcoin_address : (opt text) -> (text);
   // Returns the balance of the given bitcoin address.
   bitcoin_balance : (text) -> (nat64);
   // Returns the 100 fee percentiles measured in millisatoshi/byte.
@@ -40,13 +41,14 @@ service : (BitcoinNetwork, opt InitArg) -> {
   bitcoin_current_fee_percentiles : () -> (vec nat64);
   // Sends the given amount of bitcoin from this smart contract's P2PKH address to the given address.
   // Returns the transaction ID.
-  bitcoin_send : (SendRequest) -> (text);
+  bitcoin_send : (opt text, SendRequest) -> (text);
   // Returns the UTXOs of the given Bitcoin address.
   bitcoin_utxos : (text) -> (GetUtxosResponse);
-  ethereum_address : () -> (Result);
+  ethereum_address : (text) -> (Result);
   ethereum_balance : (text) -> (Result);
   ethereum_send : (text, nat) -> (Result);
-  solana_address : () -> (text);
-  solana_balance : (opt text) -> (nat);
+  get_addresses : (text) -> (Addresses);
+  solana_address : (text) -> (text);
+  solana_balance : (text) -> (nat);
   solana_send : (text, nat) -> (text);
 }

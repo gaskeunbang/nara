@@ -16,19 +16,26 @@ use std::str::FromStr;
 /// Sends the given amount of bitcoin from this smart contract's P2PKH address to the given address.
 /// Returns the transaction ID.
 #[update]
-pub async fn bitcoin_send(request: SendRequest) -> String {
+pub async fn bitcoin_send(sender: Option<String>, request: SendRequest) -> String {
     let ctx = BTC_CONTEXT.with(|ctx| ctx.get());
 
     if request.amount_in_satoshi == 0 {
         trap("Amount must be greater than 0");
     }
 
+    let sender = match sender {
+        Some(s) => s,
+        None => trap("Sender is required"),
+    };
+
     let dst_address = Address::from_str(&request.destination_address)
         .unwrap()
         .require_network(ctx.bitcoin_network)
         .unwrap();
 
-    let derivation_path = DerivationPath::p2pkh(0, 0);
+    // Derive address index deterministically from the sender string
+    let sender_index = fnv1a_u32(&sender);
+    let derivation_path = DerivationPath::p2pkh(0, sender_index);
 
     let own_public_key = get_ecdsa_public_key(&ctx, derivation_path.to_vec_u8_path()).await;
 
@@ -74,4 +81,18 @@ pub async fn bitcoin_send(request: SendRequest) -> String {
     .unwrap();
 
     signed_transaction.compute_txid().to_string()
+}
+
+// Stable FNV-1a 64-bit hash reduced to u32 for deterministic address index derivation
+fn fnv1a_u32(input: &str) -> u32 {
+    const FNV_OFFSET_BASIS: u64 = 0xcbf29ce484222325;
+    const FNV_PRIME: u64 = 0x00000100000001B3;
+
+    let mut hash: u64 = FNV_OFFSET_BASIS;
+    for byte in input.as_bytes() {
+        hash ^= *byte as u64;
+        hash = hash.wrapping_mul(FNV_PRIME);
+    }
+    // Fold to u32 to fit derivation path index constraints
+    (hash as u32) ^ ((hash >> 32) as u32)
 }

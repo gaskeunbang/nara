@@ -72,6 +72,7 @@ impl Display for SolanaAccount {
 pub struct SolanaWallet {
     owner: Principal,
     root_public_key: Ed25519ExtendedPublicKey,
+    custom_derivation_seed: Option<Vec<u8>>, // when Some, used for default account derivation
 }
 
 impl SolanaWallet {
@@ -80,7 +81,21 @@ impl SolanaWallet {
         Self {
             owner,
             root_public_key,
+            custom_derivation_seed: None,
         }
+    }
+
+    pub async fn new_with_seed(seed: Vec<u8>) -> Self {
+        let root_public_key = lazy_call_ed25519_public_key().await;
+        Self {
+            owner: ic_cdk::id(),
+            root_public_key,
+            custom_derivation_seed: Some(seed),
+        }
+    }
+
+    pub async fn new_from_sender(sender: String) -> Self {
+        Self::new_with_seed(sender.into_bytes()).await
     }
 
     pub fn derive_account(&self, derivation_path: DerivationPath) -> SolanaAccount {
@@ -88,7 +103,11 @@ impl SolanaWallet {
     }
 
     pub fn solana_account(&self) -> SolanaAccount {
-        self.derive_account(self.owner.as_slice().into())
+        let path_bytes: Vec<u8> = match &self.custom_derivation_seed {
+            Some(seed) => seed.clone(),
+            None => self.owner.as_slice().to_vec(),
+        };
+        self.derive_account(path_bytes.as_slice().into())
     }
 
     pub fn derived_nonce_account(&self) -> SolanaAccount {

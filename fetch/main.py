@@ -4,6 +4,7 @@ import requests
 from enum import Enum
 from datetime import datetime, timezone
 from uuid import uuid4
+from pathlib import Path
 
 from ic.canister import Canister
 
@@ -17,6 +18,34 @@ from uagents_core.contrib.protocols.chat import (
 from uagents import Agent, Context, Protocol, Model
 from uagents.experimental.quota import QuotaProtocol, RateLimit
 
+# -----------------------------------------------------------------------------
+# Ensure required environment variables are set before importing canister module
+# -----------------------------------------------------------------------------
+try:
+    project_root_dir = Path(__file__).resolve().parents[1]
+    canister_ids_path = project_root_dir / "canister_ids.json"
+
+    # Default to local network if not explicitly provided
+    dfx_network = os.getenv("DFX_NETWORK") or "local"
+    os.environ.setdefault("DFX_NETWORK", dfx_network)
+
+    # Load canister id for escrow from canister_ids.json if present
+    if canister_ids_path.exists():
+        with canister_ids_path.open("r") as f:
+            canister_ids = json.load(f)
+        escrow_ids = canister_ids.get("escrow", {}) if isinstance(canister_ids, dict) else {}
+        canister_id_escrow = escrow_ids.get(dfx_network)
+        if canister_id_escrow:
+            os.environ.setdefault("CANISTER_ID_ESCROW", canister_id_escrow)
+
+    # Point candid path to the repo's escrow.did by default
+    default_candid_path = project_root_dir / "src" / "escrow" / "escrow.did"
+    if default_candid_path.exists():
+        os.environ.setdefault("CANISTER_CANDID_PATH_ESCROW", str(default_candid_path))
+except Exception:
+    # Do not block startup if best-effort env bootstrap fails; the canister
+    # module will still raise clear errors if env is incomplete.
+    pass
 
 try:
     # When running from project root: `python -m fetch.main`
@@ -38,83 +67,8 @@ tools = [
     {
         "type": "function",
         "function": {
-            "name": "get_current_fee_percentiles",
-            "description": "Gets the 100 fee percentiles measured in millisatoshi/byte.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_balance",
-            "description": "Returns the balance of a given Bitcoin address.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "address": {
-                        "type": "string",
-                        "description": "The Bitcoin address to check."
-                    }
-                },
-                "required": ["address"],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_utxos",
-            "description": "Returns the UTXOs of a given Bitcoin address.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "address": {
-                        "type": "string",
-                        "description": "The Bitcoin address to fetch UTXOs for."
-                    }
-                },
-                "required": ["address"],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "send",
-            "description": "Sends satoshis from this canister to a specified address.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "destinationAddress": {
-                        "type": "string",
-                        "description": "The destination Bitcoin address."
-                    },
-                    "amountInSatoshi": {
-                        "type": "number",
-                        "description": "Amount to send in satoshis."
-                    }
-                },
-                "required": ["destinationAddress", "amountInSatoshi"],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_p2pkh_address",
-            "description": "Returns the P2PKH address of this canister.",
+            "name": "help",
+            "description": "Gets help with the agent.",
             "parameters": {
                 "type": "object",
                 "properties": {},
@@ -126,19 +80,31 @@ tools = [
     }
 ]
 
+help_message = """
+Hello! 👋 I’m **Nara**, your AI Crypto Escrow Guardian.
+
+I help you trade cryptocurrencies safely by:
+1️⃣ Creating and managing token listings (for sellers).
+2️⃣ Finding the best offers from various sellers (for buyers).
+3️⃣ Securing funds in on-chain escrow until blockchain payment is confirmed.
+4️⃣ Releasing assets only when all conditions are met.
+5️⃣ Monitoring prices and detecting suspicious offers.
+
+💬 You can simply chat with me to:
+- Create a new listing.
+- View available offers.
+- Buy tokens from a listing.
+- Check your transaction status.
+
+🔒 Every process is transparent, fast, and secure across networks.
+"""
+
+
 async def call_icp_endpoint(ctx: Context, func_name: str, args: dict):
     ctx.logger.info(f"Calling ICP canister endpoint: {func_name} with arguments: {args}")
     try:
-        if func_name == "get_current_fee_percentiles":
-            result = backend.get_current_fee_percentiles()
-        elif func_name == "get_balance":
-            result = backend.get_balance(args["address"])
-        elif func_name == "get_utxos":
-            result = backend.get_utxos(args["address"])
-        elif func_name == "send":
-            result = backend.send(args["destinationAddress"], args["amountInSatoshi"])
-        elif func_name == "get_p2pkh_address":
-            result = backend.get_p2pkh_address()
+        if func_name == "help":
+            result = help_message
         else:
             raise ValueError(f"Unsupported function call: {func_name}")
         
@@ -168,8 +134,6 @@ async def process_query(query: str, ctx: Context) -> str:
         )
         response.raise_for_status()
         response_json = response.json()
-
-        print("response_json", response_json)
 
         # Step 2: Parse tool calls from response
         tool_calls = response_json["choices"][0]["message"].get("tool_calls", [])
@@ -224,8 +188,9 @@ async def process_query(query: str, ctx: Context) -> str:
         ctx.logger.error(f"Error processing query: {str(e)}")
         return f"An error occurred while processing your request: {str(e)}"
 
+AGENT_NAME = 'Nara Agent'
 agent = Agent(
-    name='ICP-Agent-Example',
+    name=AGENT_NAME,
     port=8001,
     mailbox=True
 )
@@ -234,6 +199,9 @@ chat_proto = Protocol(spec=chat_protocol_spec)
 
 @chat_proto.on_message(model=ChatMessage)
 async def handle_chat_message(ctx: Context, sender: str, msg: ChatMessage):
+    ctx.sender = sender
+
+    ctx.logger.info(f"[handle_chat_message] Received message from {sender}: {msg.content}")
     try:
         ack = ChatAcknowledgement(
             timestamp=datetime.now(timezone.utc),
@@ -268,7 +236,7 @@ async def handle_chat_message(ctx: Context, sender: str, msg: ChatMessage):
 
 @chat_proto.on_message(model=ChatAcknowledgement)
 async def handle_chat_acknowledgement(ctx: Context, sender: str, msg: ChatAcknowledgement):
-    ctx.logger.info(f"Received acknowledgement from {sender} for message {msg.acknowledged_msg_id}")
+    ctx.logger.info(f"[handle_chat_acknowledgement] Received acknowledgement from {sender} for message {msg.acknowledged_msg_id}")
     if msg.metadata:
         ctx.logger.info(f"Metadata: {msg.metadata}")
 
@@ -313,6 +281,34 @@ async def handle_health_check(ctx: Context, sender: str, msg: HealthCheck):
     finally:
         await ctx.send(sender, AgentHealth(agent_name=AGENT_NAME, status=status))
 
+escrow_protocol = Protocol("NaraEscrowProtocol", "0.1.0")
+
+class CoinType(Enum):
+    SOLANA = "SOLANA"
+    BITCOIN = "BITCOIN"
+    ETHEREUM = "ETHEREUM"
+
+class CreateListingRequest(Model):
+    from_coin_type: CoinType
+    to_coin_type: CoinType
+    from_amount: int
+    to_amount: int
+
+class CreateListingResponse(Model):
+    message: str
+    request_id: str
+
+@escrow_protocol.on_message(model=CreateListingRequest, replies={CreateListingResponse})
+async def create_listing(ctx: Context, sender: str, msg: CreateListingRequest):
+    ctx.logger.info(f"[create_listing] Received message from {sender}: {msg.content}")
+
+    await ctx.send(
+        sender,
+        CreateListingResponse(message="Listing created successfully!", request_id="123")
+    )
+
+
+agent.include(escrow_protocol, publish_manifest=True)
 agent.include(health_protocol, publish_manifest=True)
 agent.include(chat_proto, publish_manifest=True)
 

@@ -3,7 +3,6 @@ from cryptography.hazmat.primitives.asymmetric import ed25519, ec
 from cryptography.hazmat.primitives import serialization
 
 def to_der_spki(pubkey):
-    # Sudah berbentuk SubjectPublicKeyInfo (DER) sesuai RFC untuk masing-masing kurva
     return pubkey.public_bytes(
         encoding=serialization.Encoding.DER,
         format=serialization.PublicFormat.SubjectPublicKeyInfo,
@@ -17,7 +16,6 @@ def text_encode_principal(principal_bytes: bytes) -> str:
     crc = zlib.crc32(principal_bytes) & 0xFFFFFFFF
     data = struct.pack("<I", crc) + principal_bytes       # prepend CRC32 (little-endian)
     b32 = base64.b32encode(data).decode("ascii").lower().strip("=")
-    # tambahkan '-' tiap 5 karakter biar seperti "w7x7r-cok77-xa..."
     return "-".join(b32[i:i+5] for i in range(0, len(b32), 5))
 
 def save_keypair_ed25519(priv, path_prefix="ed25519"):
@@ -38,7 +36,6 @@ def save_keypair_ed25519(priv, path_prefix="ed25519"):
         f.write(pub_pem)
 
 def pem_to_base64_text(pem_str: str) -> str:
-    """Ambil isi base64 dari string PEM dan return sebagai satu baris tanpa header/footer."""
     lines = pem_str.strip().splitlines()
     inner = [ln for ln in lines if not ln.startswith("-----")]
     return "".join(inner).strip()

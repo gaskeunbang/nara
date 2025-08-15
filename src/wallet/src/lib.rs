@@ -36,7 +36,7 @@ pub struct Addresses {
 
 #[ic_cdk::update]
 pub async fn get_addresses(sender: String) -> Addresses {
-	let bitcoin = crate::bitcoin::service::bitcoin_address::bitcoin_address(Some(sender.clone())).await;
+	let bitcoin = crate::bitcoin::service::bitcoin_address::bitcoin_address(sender.clone()).await;
 	let ethereum = match crate::ethereum::service::ethereum_address::ethereum_address(sender.clone()).await {
 		Ok(addr) => addr,
 		Err(e) => format!("Error: {}", e),

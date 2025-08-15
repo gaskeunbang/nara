@@ -3,7 +3,7 @@ mod ecdsa;
 mod p2pkh;
 pub mod service;
 
-use ic_cdk::{api::management_canister::bitcoin::BitcoinNetwork, init, post_upgrade};
+use ic_cdk::api::management_canister::bitcoin::BitcoinNetwork;
 use std::cell::Cell;
 
 /// Runtime configuration shared across all Bitcoin-related operations.

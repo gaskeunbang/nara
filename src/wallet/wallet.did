@@ -33,7 +33,7 @@ service : (BitcoinNetwork, opt InitArg) -> {
   // 
   // This address uses an ECDSA public key and encodes it in the legacy Base58 format.
   // It is supported by all bitcoin wallets and full nodes.
-  bitcoin_address : (opt text) -> (text);
+  bitcoin_address : (text) -> (text);
   // Returns the balance of the given bitcoin address.
   bitcoin_balance : (text) -> (nat64);
   // Returns the 100 fee percentiles measured in millisatoshi/byte.

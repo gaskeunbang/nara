@@ -3,7 +3,12 @@
 .idea/
 **/*~
 
+# fetch
 fetch/venv/
+fetch/private_keys.json
+fetch/.env
+fetch/__pycache__/
+fetch/fetch.log
 
 # Mac OSX temporary files
 .DS_Store

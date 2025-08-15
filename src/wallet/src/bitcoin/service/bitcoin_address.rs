@@ -7,14 +7,7 @@ use ic_cdk::update;
 /// This address uses an ECDSA public key and encodes it in the legacy Base58 format.
 /// It is supported by all bitcoin wallets and full nodes.
 #[update]
-pub async fn bitcoin_address(sender: Option<String>) -> String {
-    // if sender is None, return an error
-    if sender.is_none() {
-        return "Error: Sender is required".to_string();
-    }
-
-    let sender = sender.unwrap();
-
+pub async fn bitcoin_address(sender: String) -> String {
     let ctx = BTC_CONTEXT.with(|ctx| ctx.get());
 
     // Unique derivation paths are used for every address type generated, to ensure

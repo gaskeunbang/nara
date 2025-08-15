@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "src/escrow/"
+    "src/wallet/"
 ]
 resolver = "2"
 

@@ -1938,41 +1938,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "escrow"
-version = "0.1.0"
-dependencies = [
- "alloy",
- "bitcoin",
- "bs58",
- "candid",
- "getrandom 0.2.16",
- "hex",
- "ic-cdk",
- "ic-ed25519",
- "leb128",
- "num 0.4.3",
- "serde",
- "serde_bytes",
- "serde_json",
- "serde_with",
- "sol_rpc_client",
- "sol_rpc_types",
- "solana-client",
- "solana-commitment-config",
- "solana-hash",
- "solana-instruction",
- "solana-keypair",
- "solana-message",
- "solana-program",
- "solana-pubkey",
- "solana-rpc-client-nonce-utils",
- "solana-signature",
- "solana-signer",
- "solana-system-interface",
- "solana-transaction",
-]
-
-[[package]]
 name = "event-listener"
 version = "2.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7061,6 +7026,41 @@ checksum = "29790946404f91d9c5d06f9874efddea1dc06c5efe94541a7d6863108e3a5e4b"
 dependencies = [
  "same-file",
  "winapi-util",
+]
+
+[[package]]
+name = "wallet"
+version = "0.1.0"
+dependencies = [
+ "alloy",
+ "bitcoin",
+ "bs58",
+ "candid",
+ "getrandom 0.2.16",
+ "hex",
+ "ic-cdk",
+ "ic-ed25519",
+ "leb128",
+ "num 0.4.3",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "serde_with",
+ "sol_rpc_client",
+ "sol_rpc_types",
+ "solana-client",
+ "solana-commitment-config",
+ "solana-hash",
+ "solana-instruction",
+ "solana-keypair",
+ "solana-message",
+ "solana-program",
+ "solana-pubkey",
+ "solana-rpc-client-nonce-utils",
+ "solana-signature",
+ "solana-signer",
+ "solana-system-interface",
+ "solana-transaction",
 ]
 
 [[package]]

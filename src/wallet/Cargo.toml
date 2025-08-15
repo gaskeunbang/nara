@@ -1,5 +1,5 @@
 [package]
-name = "escrow"
+name = "wallet"
 version = "0.1.0"
 edition = "2021"
 
@@ -15,7 +15,7 @@ serde = "1.0.132"
 serde_bytes = "0.11.15"
 serde_json = "1.0.140"
 serde_with = "3.12.0"
-getrandom = { version = "*", default-features = false, features = ["custom"] }
+getrandom = { version = "0.2", default-features = false, features = ["custom"] }
 
 # Bitcoin
 hex = "0.4.3"

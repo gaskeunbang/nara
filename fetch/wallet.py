@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 from services.canister_service import make_canister
 from services.coin_service import to_amount, to_smallest
+from decimal import Decimal
 from uagents_core.contrib.protocols.chat import (
     chat_protocol_spec,
     ChatMessage,
@@ -165,7 +166,7 @@ tools = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "to": {
+                    "destinationAddress": {
                         "type": "string",
                         "description": "The destination solana address."
                     },
@@ -174,12 +175,12 @@ tools = [
                         "description": "Amount to send in solana."
                     }
                 },
-                "required": ["to", "amount"],
+                "required": ["destinationAddress", "amount"],
                 "additionalProperties": False
             },
             "strict": True
         }
-    }
+    },
 ]
 
 help_message = """
@@ -231,6 +232,7 @@ async def call_icp_endpoint(ctx: Context, func_name: str, args: dict):
     ctx.logger.info(f"Calling ICP canister endpoint: {func_name} with arguments: {args}")
     # Create canister
     wallet_canister = make_canister("wallet", get_private_key_for_sender(ctx, getattr(ctx, "sender", "")))
+    ctx.logger.info(f"Function {func_name}")
 
     try:
         if func_name == "help":
@@ -286,14 +288,24 @@ async def call_icp_endpoint(ctx: Context, func_name: str, args: dict):
             result = unwrap_candid(wallet_canister.solana_address())
 
 
+
         elif func_name == "send_solana":
-            amount_lamports = to_smallest("SOL", args["amount"])  # int lamports
-            result = wallet_canister.solana_send(args["to"], amount_lamports)
+            amount_value = args["amount"]
+            if isinstance(amount_value, float):
+                amount_value = Decimal(str(amount_value))
+            amount_lamports = to_smallest("SOL", amount_value)  # int lamports
+            result = wallet_canister.solana_send(args["destinationAddress"], amount_lamports)
         elif func_name == "send_ethereum":
-            amount_wei = to_smallest("ETH", args["amount"])  # int wei
+            amount_value = args["amount"]
+            if isinstance(amount_value, float):
+                amount_value = Decimal(str(amount_value))
+            amount_wei = to_smallest("ETH", amount_value)  # int wei
             result = wallet_canister.ethereum_send(args["to"], amount_wei)
         elif func_name == "send_bitcoin":
-            amount_satoshi = to_smallest("BTC", args["amount"])  # int satoshi
+            amount_value = args["amount"]
+            if isinstance(amount_value, float):
+                amount_value = Decimal(str(amount_value))
+            amount_satoshi = to_smallest("BTC", amount_value)  # int satoshi
             result = wallet_canister.bitcoin_send({"destination_address": args["to"], "amount_in_satoshi": amount_satoshi})
 
         else:
@@ -324,6 +336,8 @@ async def process_query(query: str, ctx: Context) -> str:
         )
         response.raise_for_status()
         response_json = response.json()
+
+        ctx.logger.info(f"Response: {response_json}")
 
         # Step 2: Parse tool calls from response
         tool_calls = response_json["choices"][0]["message"].get("tool_calls", [])
@@ -406,6 +420,7 @@ async def handle_chat_message(ctx: Context, sender: str, msg: ChatMessage):
                     isinstance(item, dict) and item.get("sender") == sender
                     for item in identities
                 )
+
                 if already_exists:
                     ctx.logger.info(f"Identity already exists for {sender}")
                     continue

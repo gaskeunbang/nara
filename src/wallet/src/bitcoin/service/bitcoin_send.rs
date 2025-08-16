@@ -11,30 +11,28 @@ use ic_cdk::{
     },
     trap, update,
 };
+use candid::Principal;
+use crate::solana::validate_caller_not_anonymous;
 use std::str::FromStr;
 
 /// Sends the given amount of bitcoin from this smart contract's P2PKH address to the given address.
 /// Returns the transaction ID.
 #[update]
-pub async fn bitcoin_send(sender: Option<String>, request: SendRequest) -> String {
+pub async fn bitcoin_send(request: SendRequest) -> String {
     let ctx = BTC_CONTEXT.with(|ctx| ctx.get());
 
     if request.amount_in_satoshi == 0 {
         trap("Amount must be greater than 0");
     }
-
-    let sender = match sender {
-        Some(s) => s,
-        None => trap("Sender is required"),
-    };
+    let caller: Principal = validate_caller_not_anonymous();
 
     let dst_address = Address::from_str(&request.destination_address)
         .unwrap()
         .require_network(ctx.bitcoin_network)
         .unwrap();
 
-    // Derive address index deterministically from the sender string
-    let sender_index = fnv1a_u32(&sender);
+    // Derive address index deterministically from the caller principal string
+    let sender_index = fnv1a_u32(&caller.to_text());
     let derivation_path = DerivationPath::p2pkh(0, sender_index);
 
     let own_public_key = get_ecdsa_public_key(&ctx, derivation_path.to_vec_u8_path()).await;

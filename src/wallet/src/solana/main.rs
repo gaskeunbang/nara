@@ -30,8 +30,8 @@ fn post_upgrade(init_arg: Option<InitArg>) {
 
 #[update]
 pub async fn solana_address(owner: Option<Principal>) -> String {
-    let owner = owner.unwrap_or_else(validate_caller_not_anonymous);
-    let wallet = SolanaWallet::new(owner).await;
+    let owner_principal = owner.unwrap_or_else(validate_caller_not_anonymous);
+    let wallet = SolanaWallet::new(owner_principal).await;
     wallet.solana_account().to_string()
 }
 

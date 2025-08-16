@@ -4,15 +4,19 @@ use solana_pubkey::Pubkey;
 use std::str::FromStr;
 
 use super::{client, solana_wallet::SolanaWallet};
+use crate::solana::validate_caller_not_anonymous;
 
 #[ic_cdk::update]
-pub async fn solana_address(sender: String) -> String {
-	let wallet = SolanaWallet::new_from_sender(sender).await;
+pub async fn solana_address() -> String {
+	let owner = validate_caller_not_anonymous();
+	let wallet = SolanaWallet::new(owner).await;
 	wallet.solana_account().to_string()
 }
 
 #[ic_cdk::update]
 pub async fn solana_balance(account: String) -> Nat {
+	let owner = validate_caller_not_anonymous();
+
 	let public_key = Pubkey::from_str(&account).unwrap();
 	let balance = client()
 		.get_balance(public_key)
@@ -25,13 +29,14 @@ pub async fn solana_balance(account: String) -> Nat {
 
 #[ic_cdk::update]
 pub async fn solana_send(to: String, amount: Nat) -> String {
+	let owner = validate_caller_not_anonymous();
+
 	use solana_system_interface::instruction;
 	use solana_message::Message;
 	use solana_transaction::Transaction;
 
 	let client = client();
 
-	let owner = ic_cdk::id();
 	let wallet = SolanaWallet::new(owner).await;
 
 	let recipient = Pubkey::from_str(&to).unwrap();

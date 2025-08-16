@@ -305,7 +305,7 @@ async def call_icp_endpoint(ctx: Context, func_name: str, args: dict):
 
 async def process_query(query: str, ctx: Context) -> str:
     try:
-        # Step 1: Initial call to ASI1 with user query and tools
+        # Step 1: Initial call to ASI1 with user query and tool
         user_message = {
             "role": "user",
             "content": query

@@ -9,6 +9,7 @@ fetch/private_keys.json
 fetch/.env
 fetch/__pycache__/
 fetch/fetch.log
+fetch/*_data.json
 
 # Mac OSX temporary files
 .DS_Store

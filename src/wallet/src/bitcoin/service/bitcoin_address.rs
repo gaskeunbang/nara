@@ -1,19 +1,22 @@
 use crate::bitcoin::{common::DerivationPath, ecdsa::get_ecdsa_public_key, BTC_CONTEXT};
 use bitcoin::{Address, PublicKey};
 use ic_cdk::update;
+use candid::Principal;
+use crate::solana::validate_caller_not_anonymous;
 
 /// Returns a legacy P2PKH (Pay-to-PubKey-Hash) address for this smart contract.
 ///
 /// This address uses an ECDSA public key and encodes it in the legacy Base58 format.
 /// It is supported by all bitcoin wallets and full nodes.
 #[update]
-pub async fn bitcoin_address(sender: String) -> String {
+pub async fn bitcoin_address() -> String {
     let ctx = BTC_CONTEXT.with(|ctx| ctx.get());
+    let caller: Principal = validate_caller_not_anonymous();
 
     // Unique derivation paths are used for every address type generated, to ensure
     // each address has its own unique key pair.
-    // Derive address index deterministically from the sender string
-    let sender_index = fnv1a_u32(&sender);
+    // Derive address index deterministically dari principal pemanggil
+    let sender_index = fnv1a_u32(&caller.to_text());
     let derivation_path = DerivationPath::p2pkh(0, sender_index);
 
     // Get the ECDSA public key of this smart contract at the given derivation path

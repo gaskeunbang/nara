@@ -157,53 +157,29 @@ tools = [
             "strict": True
         }
     },
-    # Send
     {
         "type": "function",
         "function": {
             "name": "send_solana",
-            "description": "Sends solana to a given address.",
+            "description": "Sends solana coin from my wallet to a specified address.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "to": {"type": "string", "description": "The valid solana address to send solana to."},
-                    "amount": {"type": "string", "description": "The amount of solana to send."}
+                    "to": {
+                        "type": "string",
+                        "description": "The destination solana address."
+                    },
+                    "amount": {
+                        "type": "number",
+                        "description": "Amount to send in solana."
+                    }
                 },
                 "required": ["to", "amount"],
                 "additionalProperties": False
             },
             "strict": True
         }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "send_ethereum",
-            "description": "Sends ethereum to a given address.",
-            "parameters": {
-                "required": ["to", "amount"],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "send_bitcoin",
-            "description": "Sends bitcoin to a given address.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "to": {"type": "string", "description": "The valid bitcoin address to send bitcoin to."},
-                    "amount": {"type": "string", "description": "The amount of bitcoin to send."}
-                },
-                "required": ["to", "amount"],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
+    }
 ]
 
 help_message = """
@@ -320,7 +296,6 @@ async def call_icp_endpoint(ctx: Context, func_name: str, args: dict):
             amount_satoshi = to_smallest("BTC", args["amount"])  # int satoshi
             result = wallet_canister.bitcoin_send({"destination_address": args["to"], "amount_in_satoshi": amount_satoshi})
 
-
         else:
             raise ValueError(f"Unsupported function call: {func_name}")
         
@@ -339,7 +314,7 @@ async def process_query(query: str, ctx: Context) -> str:
             "model": "asi1-mini",
             "messages": [user_message],
             "tools": tools,
-            "temperature": 0.7,
+            "temperature": 0.2,
             "max_tokens": 1024
         }
         response = requests.post(
@@ -418,7 +393,6 @@ async def handle_chat_message(ctx: Context, sender: str, msg: ChatMessage):
         await ctx.send(sender, ack)
 
         for item in msg.content:
-            print("item", item)
             if isinstance(item, StartSessionContent):
                 ctx.logger.info(f"Got a start session message from {sender}")
 

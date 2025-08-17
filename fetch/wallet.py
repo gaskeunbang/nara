@@ -77,6 +77,20 @@ tools = [
     {
         "type": "function",
         "function": {
+            "name": "get_all_balances",
+            "description": "Gets the balance of all coin types.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": False
+            },
+            "strict": True
+        }
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "get_bitcoin_address",
             "description": "Gets the bitcoin address of the user.",
             "parameters": {
@@ -181,6 +195,52 @@ tools = [
             "strict": True
         }
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "send_bitcoin",
+            "description": "Sends bitcoin coin from my wallet to a specified address.",
+            "parameters": {
+                "type": "object",
+                "properties": { 
+                    "destinationAddress": {
+                        "type": "string",
+                        "description": "The destination bitcoin address."
+                    },
+                    "amount": {
+                        "type": "number",
+                        "description": "Amount to send in bitcoin."
+                    }
+                },
+                "required": ["destinationAddress", "amount"],
+                "additionalProperties": False
+            },
+            "strict": True
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "send_ethereum",
+            "description": "Sends ethereum coin from my wallet to a specified address.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "destinationAddress": {
+                        "type": "string",
+                        "description": "The destination ethereum address."
+                    },
+                    "amount": {
+                        "type": "number",
+                        "description": "Amount to send in ethereum."
+                    }
+                },
+                "required": ["destinationAddress", "amount"],
+                "additionalProperties": False
+            },
+            "strict": True
+        }
+    },
 ]
 
 help_message = """
@@ -247,6 +307,31 @@ async def call_icp_endpoint(ctx: Context, func_name: str, args: dict):
                 result = wallet_canister.solana_address()
             else:
                 raise ValueError(f"Unsupported coin type: {args['coin_type']}")
+
+        elif func_name == "get_all_balances":
+            # Get addresses
+            btc_addr = unwrap_candid(wallet_canister.bitcoin_address())
+            eth_addr = unwrap_candid(wallet_canister.ethereum_address())
+            sol_addr = unwrap_candid(wallet_canister.solana_address())
+
+            # Fetch balances in smallest units
+            btc_raw = wallet_canister.bitcoin_balance(btc_addr)
+            eth_raw = wallet_canister.ethereum_balance(eth_addr)
+            sol_raw = wallet_canister.solana_balance(sol_addr)
+
+            # Unwrap candid values
+            btc_smallest = unwrap_candid(btc_raw)      # satoshi (nat64)
+            eth_smallest = unwrap_candid(eth_raw)      # wei (string)
+            sol_smallest = unwrap_candid(sol_raw)      # lamports (Nat)
+
+            # Convert to human-readable amounts
+            result = {
+                "BTC": to_amount("BTC", btc_smallest),
+                "ETH": to_amount("ETH", eth_smallest),
+                "SOL": to_amount("SOL", sol_smallest),
+            }
+
+            ctx.logger.info(f"Result (amounts): {result}")
                 
         elif func_name == "get_balance":
             if args["coin_type"] == "BTC":
@@ -288,7 +373,6 @@ async def call_icp_endpoint(ctx: Context, func_name: str, args: dict):
             result = unwrap_candid(wallet_canister.solana_address())
 
 
-
         elif func_name == "send_solana":
             amount_value = args["amount"]
             if isinstance(amount_value, float):
@@ -300,13 +384,13 @@ async def call_icp_endpoint(ctx: Context, func_name: str, args: dict):
             if isinstance(amount_value, float):
                 amount_value = Decimal(str(amount_value))
             amount_wei = to_smallest("ETH", amount_value)  # int wei
-            result = wallet_canister.ethereum_send(args["to"], amount_wei)
+            result = wallet_canister.ethereum_send(args["destinationAddress"], amount_wei)
         elif func_name == "send_bitcoin":
             amount_value = args["amount"]
             if isinstance(amount_value, float):
                 amount_value = Decimal(str(amount_value))
             amount_satoshi = to_smallest("BTC", amount_value)  # int satoshi
-            result = wallet_canister.bitcoin_send({"destination_address": args["to"], "amount_in_satoshi": amount_satoshi})
+            result = wallet_canister.bitcoin_send({"destination_address": args["destinationAddress"], "amount_in_satoshi": amount_satoshi})
 
         else:
             raise ValueError(f"Unsupported function call: {func_name}")

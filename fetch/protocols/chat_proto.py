@@ -1,11 +1,7 @@
-import os
 import json
 import requests
-from enum import Enum
 from datetime import datetime, timezone
 from uuid import uuid4
-from services.canister_service import make_canister
-from services.coin_service import to_amount, to_smallest
 from decimal import Decimal
 from uagents_core.contrib.protocols.chat import (
     chat_protocol_spec,
@@ -14,281 +10,25 @@ from uagents_core.contrib.protocols.chat import (
     TextContent,
     StartSessionContent,
 )
-from uagents import Agent, Context, Protocol, Model
-from uagents.experimental.quota import QuotaProtocol, RateLimit
-from services.identity_service import generate_ed25519_principal
+from uagents import Context, Protocol
 
-# ASI1 API settings
-ASI1_API_KEY = os.getenv("ASI1_API_KEY")
-ASI1_BASE_URL = "https://api.asi1.ai/v1"
-ASI1_HEADERS = {
-    "Authorization": f"Bearer {ASI1_API_KEY}",
-    "Content-Type": "application/json"
-}
+# Utils
+from utils.canister import make_canister
+from utils.coin import to_amount, to_smallest
+from utils.pricing import get_price_usd
+from utils.identity import generate_ed25519_principal
+from utils.candid import unwrap_candid
+from utils.context import get_private_key_for_sender
 
-# Setup agent
-AGENT_NAME = 'Nara Wallet Agent'
-agent = Agent(
-    name=AGENT_NAME,
-    seed="nara-wallet-agent",
-    port=8001,
-    mailbox=True,
-    publish_agent_details=True,
-)
+# Config
+from config.messages import help_message, welcome_message
+from config.tools import tools
+from config.settings import ASI1_BASE_URL, ASI1_HEADERS
 
-# Setup protocols
-chat_proto = Protocol(spec=chat_protocol_spec)
-health_protocol = QuotaProtocol(
-    storage_reference=agent.storage, name="HealthProtocol", version="0.1.0"
-)
+async def get_crypto_price(ctx: Context, coin_type: str, amount_in_token: float):
+    return get_price_usd(coin_type, amount_in_token, logger=ctx.logger)
 
-# Setup tools
-tools = [
-    {
-        "type": "function",
-        "function": {
-            "name": "help",
-            "description": "Gets help with the agent.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "generate_wallet_address",
-            "description": "Generates a new wallet address for the user.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "coin_type": {"type": "string", "enum": ["BTC", "ETH", "SOL"]}
-                },
-                "required": ["coin_type"],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_all_balances",
-            "description": "Gets the balance of all coin types.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_bitcoin_address",
-            "description": "Gets the bitcoin address of the user.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_ethereum_address",
-            "description": "Gets the ethereum address of the user.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_solana_address",
-            "description": "Gets the solana address of the user.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_bitcoin_balance",
-            "description": "Gets the balance of a given coin type.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_ethereum_balance",
-            "description": "Gets the balance of a given coin type.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_solana_balance",
-            "description": "Gets the balance of a given coin type.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "send_solana",
-            "description": "Sends solana coin from my wallet to a specified address.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "destinationAddress": {
-                        "type": "string",
-                        "description": "The destination solana address."
-                    },
-                    "amount": {
-                        "type": "number",
-                        "description": "Amount to send in solana."
-                    }
-                },
-                "required": ["destinationAddress", "amount"],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "send_bitcoin",
-            "description": "Sends bitcoin coin from my wallet to a specified address.",
-            "parameters": {
-                "type": "object",
-                "properties": { 
-                    "destinationAddress": {
-                        "type": "string",
-                        "description": "The destination bitcoin address."
-                    },
-                    "amount": {
-                        "type": "number",
-                        "description": "Amount to send in bitcoin."
-                    }
-                },
-                "required": ["destinationAddress", "amount"],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "send_ethereum",
-            "description": "Sends ethereum coin from my wallet to a specified address.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "destinationAddress": {
-                        "type": "string",
-                        "description": "The destination ethereum address."
-                    },
-                    "amount": {
-                        "type": "number",
-                        "description": "Amount to send in ethereum."
-                    }
-                },
-                "required": ["destinationAddress", "amount"],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-]
-
-help_message = """
-    Hello! 👋 I’m **Nara**, your AI Crypto Wallet Agent.
-
-    I help you manage and grow your crypto portfolio by:
-    1️⃣ Generating new wallet addresses for BTC, ETH, and SOL.
-    2️⃣ Sending crypto to any valid blockchain address.
-    3️⃣ Receiving crypto through your personal wallet address.
-    4️⃣ Checking your real-time coin balances.
-    5️⃣ Buying crypto instantly with secure Stripe payments.
-    6️⃣ Getting the best conversion rates with AI-powered price comparison across markets.
-
-    💬 You can simply chat with me to:
-    - Create a new wallet address.
-    - Transfer coins to another address.
-    - Check your wallet balance.
-    - Buy crypto using fiat currency.
-    - Find the best market price for your coins.
-
-    🔐 Every transaction is fast, secure, and stored on-chain.
-"""
-
-
-def unwrap_candid(value):
-    v = value
-    # Unwrap list/tuple satu elemen berulang kali
-    while isinstance(v, (list, tuple)) and len(v) == 1:
-        v = v[0]
-    # Unwrap Result
-    if isinstance(v, dict):
-        if "Ok" in v:
-            return v["Ok"]
-        if "Err" in v:
-            raise Exception(f"Canister returned error: {v['Err']}")
-    return v
-
-
-def get_private_key_for_sender(ctx: Context, sender: str):
-    identities = ctx.storage.get("identity") or []
-    if not isinstance(identities, list):
-        identities = [identities]
-    for item in identities:
-        if isinstance(item, dict) and item.get("sender") == sender:
-            return item.get("private_key")
-    return None
-
-async def call_icp_endpoint(ctx: Context, func_name: str, args: dict):
+async def call_endpoint(ctx: Context, func_name: str, args: dict):
     ctx.logger.info(f"Calling ICP canister endpoint: {func_name} with arguments: {args}")
     # Create canister
     wallet_canister = make_canister("wallet", get_private_key_for_sender(ctx, getattr(ctx, "sender", "")))
@@ -297,6 +37,11 @@ async def call_icp_endpoint(ctx: Context, func_name: str, args: dict):
     try:
         if func_name == "help":
             result = help_message
+
+        elif func_name == "get_coin_price":
+            # amount dikirim oleh tool dalam display unit (BTC/ETH/SOL)
+            result = await get_crypto_price(ctx, args["coin_type"], args["amount"])
+            ctx.logger.info(f"Result: {result}")
 
         elif func_name == "generate_wallet_address":
             if args["coin_type"] == "BTC":
@@ -428,7 +173,7 @@ async def process_query(query: str, ctx: Context) -> str:
         messages_history = [user_message, response_json["choices"][0]["message"]]
 
         if not tool_calls:
-            return f"""I couldn't determine your request. I'm Nara, your AI Crypto Wallet Agent, and I can help you with tasks such as generating new wallet addresses for BTC, ETH, and SOL, sending crypto to any valid blockchain address, receiving crypto through your personal wallet address, checking your real-time coin balances, buying crypto instantly with secure Stripe payments, and finding the best conversion rates using AI-powered price comparison across markets. If your question is outside these areas, I won't be able to help, so please rephrase your question to match one of these topics."""
+            return welcome_message
 
         # Step 3: Execute tools and format results
         for tool_call in tool_calls:
@@ -436,10 +181,8 @@ async def process_query(query: str, ctx: Context) -> str:
             arguments = json.loads(tool_call["function"]["arguments"])
             tool_call_id = tool_call["id"]
 
-            ctx.logger.info(f"Executing {func_name} with arguments: {arguments}")
-
             try:
-                result = await call_icp_endpoint(ctx, func_name, arguments)
+                result = await call_endpoint(ctx, func_name, arguments)
                 content_to_send = json.dumps(result)
             except Exception as e:
                 ctx.logger.error(f"Error executing tool: {str(e)}")
@@ -477,6 +220,8 @@ async def process_query(query: str, ctx: Context) -> str:
     except Exception as e:
         ctx.logger.error(f"Error processing query: {str(e)}")
         return f"An error occurred while processing your request: {str(e)}"
+
+chat_proto = Protocol(spec=chat_protocol_spec)
 
 @chat_proto.on_message(model=ChatMessage)
 async def handle_chat_message(ctx: Context, sender: str, msg: ChatMessage):
@@ -543,42 +288,3 @@ async def handle_chat_acknowledgement(ctx: Context, sender: str, msg: ChatAcknow
     ctx.logger.info(f"[handle_chat_acknowledgement] Received acknowledgement from {sender} for message {msg.acknowledged_msg_id}")
     if msg.metadata:
         ctx.logger.info(f"Metadata: {msg.metadata}")
-
-def agent_is_healthy() -> bool:
-    """
-    Implement the actual health check logic here.
-
-    For example, check if the agent can connect to a third party API,
-    check if the agent has enough resources, etc.
-    """
-    condition = True  # TODO: logic here
-    return bool(condition)
-
-class HealthCheck(Model):
-    pass
-
-class HealthStatus(str, Enum):
-    HEALTHY = "healthy"
-    UNHEALTHY = "unhealthy"
-
-class AgentHealth(Model):
-    agent_name: str
-    status: HealthStatus
-
-@health_protocol.on_message(HealthCheck, replies={AgentHealth})
-async def handle_health_check(ctx: Context, sender: str, msg: HealthCheck):
-    status = HealthStatus.UNHEALTHY
-    try:
-        if agent_is_healthy():
-            status = HealthStatus.HEALTHY
-    except Exception as err:
-        ctx.logger.error(err)
-    finally:
-        await ctx.send(sender, AgentHealth(agent_name=AGENT_NAME, status=status))
-
-# Attach protocols to agent
-agent.include(health_protocol, publish_manifest=True)
-agent.include(chat_proto, publish_manifest=True)
-
-if __name__ == "__main__":
-    agent.run()

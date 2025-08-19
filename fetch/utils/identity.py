@@ -76,17 +76,13 @@ def generate_ed25519_identity():
         encryption_algorithm=serialization.NoEncryption(),
     ).decode("utf-8")
 
-
     priv_b64 = "".join(l for l in priv_pem.splitlines() if not l.startswith("-----"))
 
-
     priv_hex = _normalize_privkey_to_hex(priv_b64)
-
     ic_identity = Identity(privkey=priv_hex)
     der_pubkey, _ = ic_identity.sign(b"probe")
     principal = Principal.self_authenticating(der_pubkey).to_str()
     der_pubkey_b64 = base64.b64encode(der_pubkey).decode("ascii")
-
 
     return principal, priv_b64, der_pubkey_b64
 

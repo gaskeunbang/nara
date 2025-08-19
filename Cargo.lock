@@ -362,7 +362,7 @@ dependencies = [
  "alloy-transport-http",
  "alloy-transport-icp",
  "futures",
- "ic-cdk",
+ "ic-cdk 0.17.2",
  "ic-cdk-timers",
  "pin-project",
  "serde",
@@ -436,7 +436,7 @@ dependencies = [
  "alloy-primitives",
  "alloy-signer",
  "async-trait",
- "ic-cdk",
+ "ic-cdk 0.17.2",
  "thiserror 1.0.69",
 ]
 
@@ -549,7 +549,7 @@ dependencies = [
  "alloy-json-rpc",
  "alloy-transport",
  "candid",
- "ic-cdk",
+ "ic-cdk 0.17.2",
  "serde",
  "serde_json",
  "tower",
@@ -2540,13 +2540,27 @@ dependencies = [
 
 [[package]]
 name = "ic-cdk"
+version = "0.14.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ae86da27ed9cebcfc7889a9f5cec5bdf52b4dcb9e2e6f1baf823f291eeb36279"
+dependencies = [
+ "candid",
+ "ic-cdk-executor",
+ "ic-cdk-macros 0.14.0",
+ "ic0 0.23.0",
+ "serde",
+ "serde_bytes",
+]
+
+[[package]]
+name = "ic-cdk"
 version = "0.17.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95a7344f41493cbf591f13ae9f90181076f808a83af799815c3074b19c693d2e"
 dependencies = [
  "candid",
  "ic-cdk-executor",
- "ic-cdk-macros",
+ "ic-cdk-macros 0.17.2",
  "ic0 0.23.0",
  "serde",
  "serde_bytes",
@@ -2557,6 +2571,20 @@ name = "ic-cdk-executor"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "903057edd3d4ff4b3fe44a64eaee1ceb73f579ba29e3ded372b63d291d7c16c2"
+
+[[package]]
+name = "ic-cdk-macros"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "01dc6bc425ec048d6ac4137c7c0f2cfbd6f8b0be8efc568feae2b265f566117c"
+dependencies = [
+ "candid",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "serde_tokenstream",
+ "syn 2.0.104",
+]
 
 [[package]]
 name = "ic-cdk-macros"
@@ -2579,7 +2607,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fb8fd812a9e26f6aa00594546f8fbf4d4853f39c3ba794c8ff11ecf86fd3c9e4"
 dependencies = [
  "futures",
- "ic-cdk",
+ "ic-cdk 0.17.2",
  "ic0 0.23.0",
  "serde",
  "serde_bytes",
@@ -2599,6 +2627,21 @@ dependencies = [
  "rand 0.8.5",
  "thiserror 2.0.14",
  "zeroize",
+]
+
+[[package]]
+name = "ic-ledger-types"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ff0912dee73950385bb95f083b6f0cd6d87bac6be52b7aecce7ea5d2c043f49"
+dependencies = [
+ "candid",
+ "crc32fast",
+ "hex",
+ "ic-cdk 0.14.2",
+ "serde",
+ "serde_bytes",
+ "sha2 0.10.9",
 ]
 
 [[package]]
@@ -4654,7 +4697,7 @@ dependencies = [
  "bincode",
  "candid",
  "derive_more 0.99.20",
- "ic-cdk",
+ "ic-cdk 0.17.2",
  "ic-ed25519",
  "serde",
  "serde_json",
@@ -4688,7 +4731,7 @@ dependencies = [
  "candid",
  "canlog",
  "derive_more 0.99.20",
- "ic-cdk",
+ "ic-cdk 0.17.2",
  "proptest",
  "regex",
  "serde",
@@ -7038,8 +7081,9 @@ dependencies = [
  "candid",
  "getrandom 0.2.16",
  "hex",
- "ic-cdk",
+ "ic-cdk 0.17.2",
  "ic-ed25519",
+ "ic-ledger-types",
  "leb128",
  "num 0.4.3",
  "serde",

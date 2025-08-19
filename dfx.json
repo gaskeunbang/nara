@@ -49,6 +49,17 @@
       "source": ["src/frontend/dist"],
       "type": "assets",
       "workspace": "nara_frontend"
+    },
+    "icp_ledger_canister": {
+      "type": "custom",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/047925dfd8386aca91d154054149727131766084/rs/ledger_suite/icp/ledger.did",
+      "wasm": "https://download.dfinity.systems/ic/047925dfd8386aca91d154054149727131766084/canisters/ledger-canister.wasm.gz",
+      "remote": {
+        "id": {
+          "ic": "ryjl3-tyaaa-aaaaa-aaaba-cai"
+        }
+      },
+      "init_arg": "(variant { Init = record { minting_account = \"21fe6f55f8ef2ad9d01f89628e2e6dfaf0aec506e28e04b906089882e72143e1\"; initial_values = vec { record { \"54fae9f6290a05ccdcf9e5eb3db54e893c17a372737cfaae6bb574b5b0a4e1d5\"; record { e8s = 10_000_000_000 : nat64; }; }; }; send_whitelist = vec {}; transfer_fee = opt record { e8s = 10_000 : nat64; }; token_symbol = opt \"LICP\"; token_name = opt \"Local ICP\"; } })"
     }
   },
   "defaults": {

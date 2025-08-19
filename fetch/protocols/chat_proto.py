@@ -63,9 +63,7 @@ async def call_endpoint(ctx: Context, func_name: str, args: dict):
             result = to_amount("SOL", balance)
 
         elif func_name == "get_icp_balance":
-            principal = get_principal_for_sender(ctx)
-
-            raw_balance = icp_ledger_canister.icrc1_balance_of({"owner": principal, "subaccount": []})
+            raw_balance = icp_ledger_canister.icrc1_balance_of({"owner": get_principal_for_sender(ctx), "subaccount": []})
             e8s_value = unwrap_candid(raw_balance)
             result = to_amount("ICP", e8s_value)
 
@@ -97,7 +95,24 @@ async def call_endpoint(ctx: Context, func_name: str, args: dict):
             amount_satoshi = to_smallest("BTC", amount_value)  # int satoshi
             result = wallet_canister.bitcoin_send({"destination_address": args["destinationAddress"], "amount_in_satoshi": amount_satoshi})
         elif func_name == "send_icp":
-            pass
+            amount_value = args["amount"]
+            if isinstance(amount_value, float):
+                amount_value = Decimal(str(amount_value))
+            amount_e8s = to_smallest("ICP", amount_value)  # int e8s
+
+            destination = args["destinationAddress"]
+            tx_res = icp_ledger_canister.icrc1_transfer({
+                "to": {
+                    "owner": destination,
+                    "subaccount": None,
+                },
+                "amount": amount_e8s,
+                "fee": None,
+                "memo": None,
+                "from_subaccount": None,
+                "created_at_time": None,
+            })
+            result = unwrap_candid(tx_res)
         else:
             raise ValueError(f"Unsupported function call: {func_name}")
         

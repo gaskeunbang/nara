@@ -168,6 +168,29 @@ tools = [
     {
         "type": "function",
         "function": {
+            "name": "send_icp",
+            "description": "Sends ICP from my wallet to a specified address.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "destinationAddress": {
+                        "type": "string",
+                        "description": "The destination ICP address / principal."
+                    },
+                    "amount": {
+                        "type": "number",
+                        "description": "Amount to send in ICP."
+                    }
+                },
+                "required": ["destinationAddress", "amount"],
+                "additionalProperties": False
+            },
+            "strict": True
+        }
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "send_bitcoin",
             "description": "Sends bitcoin coin from my wallet to a specified address.",
             "parameters": {

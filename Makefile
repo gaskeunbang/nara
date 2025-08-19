@@ -26,3 +26,15 @@ bitcoin-send:
 
 bitcoin-mine:
 	bitcoin-cli -conf=$(CURDIR)/bitcoin.conf generatetoaddress 1 bcrt1qj4k3909pq4p0pfc94xpsgzl5rkkm27elfpeqa9
+
+icp-balance:
+	@OWNER=$$(dfx identity get-principal); \
+	dfx canister call icp_ledger icrc1_balance_of \
+	'(record { owner = principal "'$$OWNER'"; subaccount = null })'
+
+icp-send:
+	dfx canister call icp_ledger icrc1_transfer \
+	'(record { from_subaccount = null; to = record { owner = principal "'$(address)'" }; amount = 100_000_000 : nat; fee = null; memo = null; created_at_time = null })'
+
+deploy:
+	./scripts/setup.sh

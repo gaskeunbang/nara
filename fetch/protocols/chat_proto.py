@@ -18,7 +18,7 @@ from utils.coin import to_amount, to_smallest
 from utils.pricing import get_price_usd
 from utils.identity import generate_ed25519_principal
 from utils.candid import unwrap_candid
-from utils.context import get_private_key_for_sender
+from utils.context import get_private_key_for_sender, get_principal_for_sender
 
 # Config
 from config.messages import help_message, welcome_message
@@ -31,7 +31,8 @@ async def get_crypto_price(ctx: Context, coin_type: str, amount_in_token: float)
 async def call_endpoint(ctx: Context, func_name: str, args: dict):
     ctx.logger.info(f"Calling ICP canister endpoint: {func_name} with arguments: {args}")
     # Create canister
-    wallet_canister = make_canister("wallet", get_private_key_for_sender(ctx, getattr(ctx, "sender", "")))
+    wallet_canister = make_canister("wallet", get_private_key_for_sender(ctx))
+    icp_ledger_canister = make_canister("icp_ledger", get_private_key_for_sender(ctx))
     ctx.logger.info(f"Function {func_name}")
 
     try:
@@ -41,19 +42,6 @@ async def call_endpoint(ctx: Context, func_name: str, args: dict):
         elif func_name == "get_coin_price":
             result = await get_crypto_price(ctx, args["coin_type"], args["amount"])
             ctx.logger.info(f"Result: {result}")
-
-        elif func_name == "get_balance":
-            if args["coin_type"] == "BTC":
-                address = wallet_canister.bitcoin_address(ctx.sender)
-                result = wallet_canister.bitcoin_balance(address)
-            elif args["coin_type"] == "ETH":
-                address = wallet_canister.ethereum_address(ctx.sender)
-                result = wallet_canister.ethereum_balance(address)
-            elif args["coin_type"] == "SOL":
-                address = wallet_canister.solana_address(ctx.sender)
-                result = wallet_canister.solana_balance(address)
-            else:
-                raise ValueError(f"Unsupported coin type: {args['coin_type']}")
 
         elif func_name == "get_bitcoin_balance":
             address_raw = wallet_canister.bitcoin_address()
@@ -75,7 +63,9 @@ async def call_endpoint(ctx: Context, func_name: str, args: dict):
             result = to_amount("SOL", balance)
 
         elif func_name == "get_icp_balance":
-            raw_balance = wallet_canister.icp_balance()
+            principal = get_principal_for_sender(ctx)
+
+            raw_balance = icp_ledger_canister.icrc1_balance_of({"owner": principal, "subaccount": []})
             e8s_value = unwrap_candid(raw_balance)
             result = to_amount("ICP", e8s_value)
 
@@ -86,7 +76,7 @@ async def call_endpoint(ctx: Context, func_name: str, args: dict):
         elif func_name == "get_solana_address":
             result = unwrap_candid(wallet_canister.solana_address())
         elif func_name == "get_icp_address":
-            result = unwrap_candid(wallet_canister.icp_address())
+            result = get_principal_for_sender(ctx)
 
         elif func_name == "send_solana":
             amount_value = args["amount"]
@@ -106,7 +96,8 @@ async def call_endpoint(ctx: Context, func_name: str, args: dict):
                 amount_value = Decimal(str(amount_value))
             amount_satoshi = to_smallest("BTC", amount_value)  # int satoshi
             result = wallet_canister.bitcoin_send({"destination_address": args["destinationAddress"], "amount_in_satoshi": amount_satoshi})
-
+        elif func_name == "send_icp":
+            pass
         else:
             raise ValueError(f"Unsupported function call: {func_name}")
         

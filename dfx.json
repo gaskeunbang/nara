@@ -1,5 +1,11 @@
 {
+  "version": 1,
   "canisters": {
+    "ai": {
+      "type": "rust",
+      "package": "ai",
+      "candid": "src/ai/trade_predictor.did"
+    },
     "wallet": {
       "candid": "src/wallet/wallet.did",
       "wasm": "target/wasm32-unknown-unknown/release/wallet.wasm",
@@ -82,6 +88,5 @@
       "providers": ["https://ic0.app"],
       "type": "persistent"
     }
-  },
-  "version": 1
+  }
 }

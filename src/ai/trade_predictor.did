@@ -1,0 +1,88 @@
+type TradeRequest = record {
+  symbol : text;
+  amount : float64;
+  side : text;
+  amount_usd : opt float64;
+};
+
+type ExchangeQuote = record {
+  exchange : text;
+  symbol : text;
+  quote_price : float64;
+  predicted_slippage : float64;
+  total_cost : float64;
+  fees : vec record { text; float64 };
+  recommendation_score : float64;
+};
+
+type ModelInfo = record {
+  model_type : text;
+  feature_count : nat32;
+  inference_engine : text;
+};
+
+type PredictionResponse = record {
+  best_venue : text;
+  potential_savings : float64;
+  quotes : vec ExchangeQuote;
+  model_info : ModelInfo;
+  timestamp : nat64;
+};
+
+type MarketData = record {
+  bids : vec record { float64; float64 };
+  asks : vec record { float64; float64 };
+  trades : vec TradeData;
+  timestamp : nat64;
+};
+
+type TradeData = record {
+  price : float64;
+  amount : float64;
+  timestamp : nat64;
+};
+
+type ModelUpload = record {
+  model_data : vec nat8;
+  scaler_data : vec nat8;
+  feature_names : vec text;
+  model_type : text;
+};
+
+type ApiError = variant {
+  InvalidRequest : text;
+  ModelNotLoaded;
+  PredictionFailed : text;
+  NetworkError : text;
+  ExchangeError : text;
+};
+
+service : {
+  // Model Management
+  upload_model : (ModelUpload) -> (variant { Ok : text; Err : ApiError });
+  get_model_info : () -> (ModelInfo) query;
+  
+  // Market Data
+  fetch_market_data : (text, text) -> (variant { Ok : MarketData; Err : ApiError });
+  
+  // Main Prediction API
+  predict_trade_cost : (TradeRequest) -> (variant { Ok : PredictionResponse; Err : ApiError });
+  
+  // Health & Utility
+  health_check : () -> (vec record { text; text }) query;
+  get_supported_exchanges : () -> (vec text) query;
+  
+  // HTTP Transform (required for HTTP outcalls)
+  transform_response : (record {
+    context : vec nat8;
+    response : record {
+      status : nat;
+      body : vec nat8;
+      headers : vec record { text; text };
+    };
+  }) -> (record {
+    status : nat;
+    body : vec nat8;
+    headers : vec record { text; text };
+  }) query;
+}

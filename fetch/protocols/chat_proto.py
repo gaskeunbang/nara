@@ -39,45 +39,9 @@ async def call_endpoint(ctx: Context, func_name: str, args: dict):
             result = help_message
 
         elif func_name == "get_coin_price":
-            # amount dikirim oleh tool dalam display unit (BTC/ETH/SOL)
             result = await get_crypto_price(ctx, args["coin_type"], args["amount"])
             ctx.logger.info(f"Result: {result}")
 
-        elif func_name == "generate_wallet_address":
-            if args["coin_type"] == "BTC":
-                result = wallet_canister.bitcoin_address(ctx.sender)
-            elif args["coin_type"] == "ETH":
-                result = wallet_canister.ethereum_address(ctx.sender)
-            elif args["coin_type"] == "SOL":
-                result = wallet_canister.solana_address()
-            else:
-                raise ValueError(f"Unsupported coin type: {args['coin_type']}")
-
-        elif func_name == "get_all_balances":
-            # Get addresses
-            btc_addr = unwrap_candid(wallet_canister.bitcoin_address())
-            eth_addr = unwrap_candid(wallet_canister.ethereum_address())
-            sol_addr = unwrap_candid(wallet_canister.solana_address())
-
-            # Fetch balances in smallest units
-            btc_raw = wallet_canister.bitcoin_balance(btc_addr)
-            eth_raw = wallet_canister.ethereum_balance(eth_addr)
-            sol_raw = wallet_canister.solana_balance(sol_addr)
-
-            # Unwrap candid values
-            btc_smallest = unwrap_candid(btc_raw)      # satoshi (nat64)
-            eth_smallest = unwrap_candid(eth_raw)      # wei (string)
-            sol_smallest = unwrap_candid(sol_raw)      # lamports (Nat)
-
-            # Convert to human-readable amounts
-            result = {
-                "BTC": to_amount("BTC", btc_smallest),
-                "ETH": to_amount("ETH", eth_smallest),
-                "SOL": to_amount("SOL", sol_smallest),
-            }
-
-            ctx.logger.info(f"Result (amounts): {result}")
-                
         elif func_name == "get_balance":
             if args["coin_type"] == "BTC":
                 address = wallet_canister.bitcoin_address(ctx.sender)
@@ -110,13 +74,19 @@ async def call_endpoint(ctx: Context, func_name: str, args: dict):
             balance = unwrap_candid(raw_balance)
             result = to_amount("SOL", balance)
 
+        elif func_name == "get_icp_balance":
+            raw_balance = wallet_canister.icp_balance()
+            e8s_value = unwrap_candid(raw_balance)
+            result = to_amount("ICP", e8s_value)
+
         elif func_name == "get_bitcoin_address":
             result = unwrap_candid(wallet_canister.bitcoin_address())
         elif func_name == "get_ethereum_address":
             result = unwrap_candid(wallet_canister.ethereum_address())
         elif func_name == "get_solana_address":
             result = unwrap_candid(wallet_canister.solana_address())
-
+        elif func_name == "get_icp_address":
+            result = unwrap_candid(wallet_canister.icp_address())
 
         elif func_name == "send_solana":
             amount_value = args["amount"]

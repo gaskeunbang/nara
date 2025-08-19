@@ -33,36 +33,6 @@ tools = [
     {
         "type": "function",
         "function": {
-            "name": "generate_wallet_address",
-            "description": "Generates a new wallet address for the user.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "coin_type": {"type": "string", "enum": ["BTC", "ETH", "SOL"]}
-                },
-                "required": ["coin_type"],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_all_balances",
-            "description": "Gets the balance of all coin types.",
-            "parameters": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": False
-            },
-            "strict": True
-        }
-    },
-    {
-        "type": "function",
-        "function": {
             "name": "get_bitcoin_address",
             "description": "Gets the bitcoin address of the user.",
             "parameters": {
@@ -105,6 +75,20 @@ tools = [
     {
         "type": "function",
         "function": {
+            "name": "get_icp_address",
+            "description": "Gets the ICP address of the user.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": False
+            },
+            "strict": True
+        }
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "get_bitcoin_balance",
             "description": "Gets the balance of a given coin type.",
             "parameters": {
@@ -135,6 +119,20 @@ tools = [
         "function": {
             "name": "get_solana_balance",
             "description": "Gets the balance of a given coin type.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": False
+            },
+            "strict": True
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_icp_balance",
+            "description": "Gets the balance of ICP.",
             "parameters": {
                 "type": "object",
                 "properties": {},
@@ -205,6 +203,29 @@ tools = [
                     "amount": {
                         "type": "number",
                         "description": "Amount to send in ethereum."
+                    }
+                },
+                "required": ["destinationAddress", "amount"],
+                "additionalProperties": False
+            },
+            "strict": True
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "send_icp",
+            "description": "Sends ICP from my wallet to a specified address.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "destinationAddress": {
+                        "type": "string",
+                        "description": "The destination ICP address."
+                    },
+                    "amount": {
+                        "type": "number",
+                        "description": "Amount to send in ICP."
                     }
                 },
                 "required": ["destinationAddress", "amount"],

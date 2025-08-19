@@ -47,6 +47,10 @@ def lamports_to_sol(lamports: Numeric) -> str:
     return _format_decimal(d, 9)
 
 
+def e8s_to_icp(e8s: Numeric) -> str:
+    d = _to_decimal(e8s) / Decimal(10) ** 8
+    return _format_decimal(d, 8)
+
 def to_amount(coin_symbol: str, smallest_unit_value: Numeric) -> str:
     """Konversi nilai dari satuan terkecil ke amount manusiawi.
 
@@ -61,6 +65,8 @@ def to_amount(coin_symbol: str, smallest_unit_value: Numeric) -> str:
         return wei_to_eth(smallest_unit_value)
     if symbol == "SOL":
         return lamports_to_sol(smallest_unit_value)
+    if symbol == "ICP":
+        return e8s_to_icp(smallest_unit_value)
     raise ValueError(f"Unsupported coin symbol: {coin_symbol}")
 
 
@@ -82,6 +88,10 @@ def sol_to_lamports(amount: Numeric) -> int:
     return int(d.to_integral_value(rounding=getcontext().rounding))
 
 
+def icp_to_e8s(amount: Numeric) -> int:
+    d = _to_decimal(amount) * (Decimal(10) ** 8)
+    return int(d.to_integral_value(rounding=getcontext().rounding))
+
 def to_smallest(coin_symbol: str, amount: Numeric) -> int:
     """Konversi amount manusiawi ke satuan terkecil (integer).
 
@@ -96,4 +106,6 @@ def to_smallest(coin_symbol: str, amount: Numeric) -> int:
         return eth_to_wei(amount)
     if symbol == "SOL":
         return sol_to_lamports(amount)
+    if symbol == "ICP":
+        return icp_to_e8s(amount)
     raise ValueError(f"Unsupported coin symbol: {coin_symbol}")

@@ -6,6 +6,7 @@ from ic.canister import Canister
 from ic.client import Client
 from ic.identity import Identity
 from ic.agent import Agent as ICAgent
+from ic.principal import Principal
 from cryptography.hazmat.primitives.serialization import load_pem_private_key, load_der_private_key, Encoding, PrivateFormat, NoEncryption
 
 load_dotenv()
@@ -62,6 +63,7 @@ def _normalize_privkey_to_hex(priv_key: str) -> str:
 def make_canister(canister_name: str, priv_key: str) -> Canister:
     try:
         priv_hex = _normalize_privkey_to_hex(priv_key)
+
         ic_identity = Identity(privkey=priv_hex)
         ic_agent = ICAgent(ic_identity, client)
 

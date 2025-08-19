@@ -1,73 +1,95 @@
-import base64, hashlib, struct, zlib
+import base64, hashlib, struct, zlib, re
 from cryptography.hazmat.primitives.asymmetric import ed25519
 from cryptography.hazmat.primitives import serialization
-
-# --- utils ---
-
-def to_der_spki(pubkey):
-    return pubkey.public_bytes(
-        encoding=serialization.Encoding.DER,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo,
-    )
-
-def principal_from_der_pubkey(der_pubkey: bytes) -> bytes:
-    # self-authenticating: 0x02 || sha224(der_pubkey)
-    digest = hashlib.sha224(der_pubkey).digest()  # 28 bytes
-    return b"\x02" + digest                       # 29 bytes
+from cryptography.hazmat.primitives.serialization import load_pem_private_key, load_der_private_key, Encoding, PrivateFormat, NoEncryption
+from ic.identity import Identity
+from ic.principal import Principal
 
 def text_encode_principal(principal_bytes: bytes) -> str:
-    # CRC32 MUST be big-endian per IC spec
     crc = zlib.crc32(principal_bytes) & 0xFFFFFFFF
-    data = struct.pack(">I", crc) + principal_bytes  # <-- big-endian
+    data = struct.pack(">I", crc) + principal_bytes  # CRC32 big-endian
     b32 = base64.b32encode(data).decode("ascii").lower().rstrip("=")
     return "-".join(b32[i:i+5] for i in range(0, len(b32), 5))
 
-def text_decode_principal(text: str) -> bytes:
-    # optional validator: decode & verify checksum
-    raw = text.replace("-", "").upper()
-    pad = "=" * (-len(raw) % 8)
-    data = base64.b32decode(raw + pad)
-    crc_be = data[:4]
-    body = data[4:]
-    calc = struct.pack(">I", zlib.crc32(body) & 0xFFFFFFFF)
-    if crc_be != calc:
-        raise ValueError("Invalid principal checksum")
-    return body
+def principal_from_der_pubkey(der_pubkey: bytes) -> str:
+    body = b"\x02" + hashlib.sha224(der_pubkey).digest()
+    return text_encode_principal(body)
 
-def pem_to_base64_text(pem_str: str) -> str:
-    lines = pem_str.strip().splitlines()
-    inner = [ln for ln in lines if not ln.startswith("-----")]
-    return "".join(inner).strip()
+def _normalize_privkey_to_hex(priv_key: str) -> str:
+    """Terima private key dalam bentuk:
+    - hex (langsung)
+    - PEM (berheader) PKCS8
+    - base64 body dari PEM PKCS8 (tanpa header)
+    dan kembalikan hex 32-byte (Ed25519 Raw).
+    """
+    s = (priv_key or "").strip()
+    # Jika sudah hex valid
+    if re.fullmatch(r"[0-9a-fA-F]+", s) and len(s) % 2 == 0:
+        return s.lower()
+    # Jika string mengandung header PEM
+    if "-----BEGIN" in s:
+        key = load_pem_private_key(s.encode("utf-8"), password=None)
+        raw = key.private_bytes(Encoding.Raw, PrivateFormat.Raw, NoEncryption())
+        return raw.hex()
+    # Coba asumsikan base64 body (DER PKCS8)
+    try:
+        der = base64.b64decode(s)
+        key = load_der_private_key(der, password=None)
+        raw = key.private_bytes(Encoding.Raw, PrivateFormat.Raw, NoEncryption())
+        return raw.hex()
+    except Exception:
+        pass
+    raise ValueError("Unsupported private key format. Provide hex, PEM, atau base64 PKCS8 body.")
 
-# --- main API ---
+def _normalize_privkey_to_hex(priv_key: str) -> str:
+    """Terima private key dalam bentuk:
+    - hex (langsung)
+    - PEM (berheader) PKCS8
+    - base64 body dari PEM PKCS8 (tanpa header)
+    dan kembalikan hex 32-byte (Ed25519 Raw).
+    """
+    s = (priv_key or "").strip()
+    # Jika sudah hex valid
+    if re.fullmatch(r"[0-9a-fA-F]+", s) and len(s) % 2 == 0:
+        return s.lower()
+    # Jika string mengandung header PEM
+    if "-----BEGIN" in s:
+        key = load_pem_private_key(s.encode("utf-8"), password=None)
+        raw = key.private_bytes(Encoding.Raw, PrivateFormat.Raw, NoEncryption())
+        return raw.hex()
+    # Coba asumsikan base64 body (DER PKCS8)
+    try:
+        der = base64.b64decode(s)
+        key = load_der_private_key(der, password=None)
+        raw = key.private_bytes(Encoding.Raw, PrivateFormat.Raw, NoEncryption())
+        return raw.hex()
+    except Exception:
+        pass
+    raise ValueError("Unsupported private key format. Provide hex, PEM, atau base64 PKCS8 body.")
 
-def generate_ed25519_principal():
-    # 1) keypair
+def generate_ed25519_identity():
     sk = ed25519.Ed25519PrivateKey.generate()
-    pk = sk.public_key()
-    # 2) DER SPKI public key
-    der = to_der_spki(pk)
-    # 3) principal bytes
-    principal = principal_from_der_pubkey(der)
-    # 4) textual principal (with correct big-endian CRC32)
-    principal_text = text_encode_principal(principal)
-    # 5) serialize keys (PEM strings)
+
     priv_pem = sk.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.NoEncryption(),
     ).decode("utf-8")
-    pub_pem = pk.public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo,
-    ).decode("utf-8")
-    # 6) hanya isi base64-nya (opsional)
-    pub_txt = pem_to_base64_text(pub_pem)
-    priv_txt = pem_to_base64_text(priv_pem)
-    return principal_text, pub_txt, priv_txt
 
-# --- quick self-test ---
+
+    priv_b64 = "".join(l for l in priv_pem.splitlines() if not l.startswith("-----"))
+
+
+    priv_hex = _normalize_privkey_to_hex(priv_b64)
+
+    ic_identity = Identity(privkey=priv_hex)
+    der_pubkey, _ = ic_identity.sign(b"probe")
+    principal = Principal.self_authenticating(der_pubkey).to_str()
+    der_pubkey_b64 = base64.b64encode(der_pubkey).decode("ascii")
+
+
+    return principal, priv_b64, der_pubkey_b64
+
 if __name__ == "__main__":
-    ptxt, pub, priv, pbytes = generate_ed25519_principal()
-    assert text_decode_principal(ptxt) == pbytes  # checksum ok
-    print("principal:", ptxt)
+    ptxt, priv_pem, priv_b64, der_pub = generate_ed25519_identity()
+    print("script principal:", ptxt)

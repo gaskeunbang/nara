@@ -16,7 +16,7 @@ from uagents import Context, Protocol
 from utils.canister import make_canister
 from utils.coin import to_amount, to_smallest
 from utils.pricing import get_price_usd
-from utils.identity import generate_ed25519_principal
+from utils.identity import generate_ed25519_identity
 from utils.candid import unwrap_candid
 from utils.context import get_private_key_for_sender, get_principal_for_sender
 
@@ -29,11 +29,10 @@ async def get_crypto_price(ctx: Context, coin_type: str, amount_in_token: float)
     return get_price_usd(coin_type, amount_in_token, logger=ctx.logger)
 
 async def call_endpoint(ctx: Context, func_name: str, args: dict):
-    ctx.logger.info(f"Calling ICP canister endpoint: {func_name} with arguments: {args}")
     # Create canister
+    ctx.logger.info(f"Private key: {get_private_key_for_sender(ctx)}")
     wallet_canister = make_canister("wallet", get_private_key_for_sender(ctx))
     icp_ledger_canister = make_canister("icp_ledger", get_private_key_for_sender(ctx))
-    ctx.logger.info(f"Function {func_name}")
 
     try:
         if func_name == "help":
@@ -104,13 +103,13 @@ async def call_endpoint(ctx: Context, func_name: str, args: dict):
             tx_res = icp_ledger_canister.icrc1_transfer({
                 "to": {
                     "owner": destination,
-                    "subaccount": None,
+                    "subaccount": [],
                 },
                 "amount": amount_e8s,
-                "fee": None,
-                "memo": None,
-                "from_subaccount": None,
-                "created_at_time": None,
+                "fee": [],
+                "memo": [],
+                "from_subaccount": [],
+                "created_at_time": [],
             })
             result = unwrap_candid(tx_res)
         else:
@@ -215,7 +214,7 @@ async def handle_chat_message(ctx: Context, sender: str, msg: ChatMessage):
             if isinstance(item, StartSessionContent):
                 ctx.logger.info(f"Got a start session message from {sender}")
 
-                principal, pub_pem, priv_pem = generate_ed25519_principal()
+                principal, priv_b64, pub_b64 = generate_ed25519_identity()
 
                 identities = ctx.storage.get("identity") or []
                 if not isinstance(identities, list):
@@ -232,8 +231,8 @@ async def handle_chat_message(ctx: Context, sender: str, msg: ChatMessage):
 
                 identities.append({
                     "principal": principal,
-                    "public_key": pub_pem,
-                    "private_key": priv_pem,
+                    "private_key": priv_b64,
+                    "public_key": pub_b64,
                     "sender": sender
                 })
                 ctx.storage.set("identity", identities)

@@ -34,7 +34,7 @@ icp-balance:
 
 icp-send:
 	dfx canister call icp_ledger icrc1_transfer \
-	'(record { from_subaccount = null; to = record { owner = principal "'$(address)'" }; amount = 100_000_000 : nat; fee = null; memo = null; created_at_time = null })'
+	'(record { from_subaccount = null; to = record { owner = principal "'$(address)'" }; amount = 101_000_000 : nat; fee = null; memo = null; created_at_time = null })'
 
 deploy:
 	./scripts/setup.sh

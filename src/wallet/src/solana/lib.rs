@@ -90,3 +90,24 @@ pub fn validate_caller_not_anonymous() -> Principal {
     }
     principal
 }
+
+/// Return the current Solana network as a friendly string based on init args.
+pub fn current_network_name() -> String {
+    use crate::solana::state::read_state;
+    read_state(|state| match state.solana_network().clone() {
+        SolanaNetwork::Mainnet => "mainnet".to_string(),
+        SolanaNetwork::Devnet => "devnet".to_string(),
+        SolanaNetwork::Custom(ep) => {
+            let url_lc = ep.url.to_lowercase();
+            if url_lc.contains("devnet") {
+                "devnet".to_string()
+            } else if url_lc.contains("mainnet") {
+                "mainnet".to_string()
+            } else if url_lc.contains("testnet") {
+                "testnet".to_string()
+            } else {
+                "custom".to_string()
+            }
+        }
+    })
+}

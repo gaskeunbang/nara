@@ -20,7 +20,7 @@ use ic_cdk::update;
 use crate::solana::validate_caller_not_anonymous;
 
 // Principal allowed to call `canister_send_token`.
-const ALLOWED_CALLER_TEXT: &str = "xxx-xxx-xxx";
+const ALLOWED_CALLER_TEXT: &str = "vh4th-irvu2-2dpkw-gk4gm-sani7-ncuk6-6jv47-uqxqm-eax7p-vxpn6-zqe";
 
 #[ic_cdk::init]
 pub fn init(bitcoin_network: BitcoinNetwork, solana_init: Option<solana::InitArg>) {
@@ -242,6 +242,34 @@ pub async fn icp_send(destination: String, amount_e8s: u64) -> Result<BlockIndex
 	}
 }
 
+#[derive(CandidType, Deserialize)]
+pub struct NetworksInfo {
+    pub bitcoin: String,
+    pub ethereum: String,
+    pub solana: String,
+    pub icp: String,
+}
+
+#[ic_cdk::update]
+pub async fn coin_network() -> NetworksInfo {
+    // Bitcoin network comes from bitcoin::BitcoinContext set at init/post-upgrade
+    let btc = crate::bitcoin::current_network_name().to_string();
+
+    // Ethereum network inferred from configured RPC service
+    let eth = crate::ethereum::current_network_name();
+
+    // Solana network read from state initialized via InitArg
+    let sol = crate::solana::current_network_name();
+
+    // ICP network: infer from build environment; default to "ic" vs "local"
+    let icp = match option_env!("DFX_NETWORK") {
+        Some("local") => "local".to_string(),
+        Some(_) => "ic".to_string(),
+        None => "ic".to_string(),
+    };
+
+    NetworksInfo { bitcoin: btc, ethereum: eth, solana: sol, icp }
+}
 
 // Export Candid so candid-extractor can generate the .did
 ic_cdk::export_candid!();

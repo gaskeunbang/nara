@@ -15,7 +15,7 @@ from uagents import Context, Protocol
 # Utils
 from utils.canister import make_canister
 from utils.coin import to_amount, to_smallest
-from utils.pricing import get_price_usd
+from utils.pricing import get_price_usd, get_price_usd_number
 from utils.identity import generate_ed25519_identity
 from utils.candid import unwrap_candid
 from utils.context import get_private_key_for_sender, get_principal_for_sender
@@ -28,6 +28,40 @@ from config.settings import ASI1_BASE_URL, ASI1_HEADERS
 
 async def get_crypto_price(ctx: Context, coin_type: str, amount_in_token: float):
     return get_price_usd(coin_type, amount_in_token, logger=ctx.logger)
+
+def _explorer_address_url(coin: str, network: str, address: str) -> str | None:
+    c = (coin or "").upper()
+    n = (network or "").lower()
+    addr = address or ""
+    if c == "BTC":
+        if n == "mainnet":
+            return f"https://mempool.space/address/{addr}"
+        if "testnet" in n:
+            return f"https://mempool.space/testnet/address/{addr}"
+        if "regtest" in n:
+            return None
+        return None
+    if c == "ETH":
+        if "sepolia" in n:
+            return f"https://sepolia.etherscan.io/address/{addr}"
+        if "goerli" in n:
+            return f"https://goerli.etherscan.io/address/{addr}"
+        if "mainnet" in n:
+            return f"https://etherscan.io/address/{addr}"
+        return None
+    if c == "SOL":
+        if "devnet" in n:
+            return f"https://explorer.solana.com/address/{addr}?cluster=devnet"
+        if "testnet" in n:
+            return f"https://explorer.solana.com/address/{addr}?cluster=testnet"
+        if "mainnet" in n:
+            return f"https://explorer.solana.com/address/{addr}"
+        return None
+    if c == "ICP":
+        if n == "local":
+            return None
+        return f"https://dashboard.internetcomputer.org/principal/{addr}"
+    return None
 
 def _get_pending_transfer_for_sender(ctx: Context) -> dict | None:
     try:
@@ -55,6 +89,14 @@ async def call_endpoint(ctx: Context, func_name: str, args: dict):
     icp_ledger_canister = make_canister("icp_ledger", get_private_key_for_sender(ctx))
 
     try:
+        # Fetch coin network info once for address/balance responses
+        networks = None
+        try:
+            networks_raw = wallet_canister.coin_network()
+            networks = unwrap_candid(networks_raw) or {}
+        except Exception:
+            networks = {}
+
         if func_name == "help":
             result = help_message
 
@@ -67,33 +109,65 @@ async def call_endpoint(ctx: Context, func_name: str, args: dict):
             address = unwrap_candid(address_raw)
             raw_balance = wallet_canister.bitcoin_balance(address)  # satoshi
             balance = unwrap_candid(raw_balance)
-            result = to_amount("BTC", balance)
+            result = {
+                "balance": to_amount("BTC", balance),
+                "network": (networks.get("bitcoin") if isinstance(networks, dict) else None) or "unknown",
+                "explorer": _explorer_address_url("BTC", (networks or {}).get("bitcoin", ""), address),
+            }
         elif func_name == "get_ethereum_balance":
             address_raw = wallet_canister.ethereum_address()
             address = unwrap_candid(address_raw)
             raw_balance = wallet_canister.ethereum_balance(address)  # wei (string)
             balance = unwrap_candid(raw_balance)
-            result = to_amount("ETH", balance)
+            result = {
+                "balance": to_amount("ETH", balance),
+                "network": (networks.get("ethereum") if isinstance(networks, dict) else None) or "unknown",
+                "explorer": _explorer_address_url("ETH", (networks or {}).get("ethereum", ""), address),
+            }
         elif func_name == "get_solana_balance":
             address_raw = wallet_canister.solana_address()
             address = unwrap_candid(address_raw)
             raw_balance = wallet_canister.solana_balance(address)  # lamports (Nat)
             balance = unwrap_candid(raw_balance)
-            result = to_amount("SOL", balance)
+            result = {
+                "balance": to_amount("SOL", balance),
+                "network": (networks.get("solana") if isinstance(networks, dict) else None) or "unknown",
+                "explorer": _explorer_address_url("SOL", (networks or {}).get("solana", ""), address),
+            }
 
         elif func_name == "get_icp_balance":
             raw_balance = icp_ledger_canister.icrc1_balance_of({"owner": get_principal_for_sender(ctx), "subaccount": []})
             e8s_value = unwrap_candid(raw_balance)
-            result = to_amount("ICP", e8s_value)
+            result = {
+                "balance": to_amount("ICP", e8s_value),
+                "network": (networks.get("icp") if isinstance(networks, dict) else None) or "unknown",
+                "explorer": _explorer_address_url("ICP", (networks or {}).get("icp", ""), get_principal_for_sender(ctx)),
+            }
 
         elif func_name == "get_bitcoin_address":
-            result = unwrap_candid(wallet_canister.bitcoin_address())
+            result = {
+                "address": unwrap_candid(wallet_canister.bitcoin_address()),
+                "network": (networks.get("bitcoin") if isinstance(networks, dict) else None) or "unknown",
+                "explorer": _explorer_address_url("BTC", (networks or {}).get("bitcoin", ""), unwrap_candid(wallet_canister.bitcoin_address())),
+            }
         elif func_name == "get_ethereum_address":
-            result = unwrap_candid(wallet_canister.ethereum_address())
+            result = {
+                "address": unwrap_candid(wallet_canister.ethereum_address()),
+                "network": (networks.get("ethereum") if isinstance(networks, dict) else None) or "unknown",
+                "explorer": _explorer_address_url("ETH", (networks or {}).get("ethereum", ""), unwrap_candid(wallet_canister.ethereum_address())),
+            }
         elif func_name == "get_solana_address":
-            result = unwrap_candid(wallet_canister.solana_address())
+            result = {
+                "address": unwrap_candid(wallet_canister.solana_address()),
+                "network": (networks.get("solana") if isinstance(networks, dict) else None) or "unknown",
+                "explorer": _explorer_address_url("SOL", (networks or {}).get("solana", ""), unwrap_candid(wallet_canister.solana_address())),
+            }
         elif func_name == "get_icp_address":
-            result = get_principal_for_sender(ctx)
+            result = {
+                "address": get_principal_for_sender(ctx),
+                "network": (networks.get("icp") if isinstance(networks, dict) else None) or "unknown",
+                "explorer": _explorer_address_url("ICP", (networks or {}).get("icp", ""), get_principal_for_sender(ctx)),
+            }
         elif func_name == "create_stripe_checkout":
             # Create a payment link to purchase a coin using fiat
             coin_type = (args["coin_type"] or "").lower()
@@ -147,7 +221,6 @@ async def process_query(query: str, ctx: Context) -> str:
 
                         # Estimate USD via get_crypto_price and create checkout
                         price_str = await get_crypto_price(ctx, coin_type.upper(), float(token_amount))
-                        from decimal import Decimal
                         usd_value = Decimal(str(price_str).replace("$", "")) if isinstance(price_str, str) else Decimal(0)
                         amount_cents = int(usd_value * 100)
                         order_id = str(uuid4())
@@ -159,10 +232,10 @@ async def process_query(query: str, ctx: Context) -> str:
                         )
                         checkout_url = session.get("url")
                         result_text = (
-                            "Payment link berhasil dibuat.\n"
+                            "Payment link has been created.\n"
                             f"Order ID: {order_id}\n"
-                            f"Bayar di sini: {checkout_url}\n"
-                            "Catatan: link pembayaran akan kedaluwarsa dalam 5 menit."
+                            f"Pay here: {checkout_url}\n"
+                            "Note: the payment link will expire in 5 minutes."
                         )
                     else:
                         result = await call_endpoint(ctx, pending["func_name"], pending["args"])
@@ -239,6 +312,7 @@ async def process_query(query: str, ctx: Context) -> str:
                 )
                 return confirmation_text
             elif is_buy:
+                ctx.logger.info(f"[buy_check] buy flow")
                 # Normalize arguments for buy flow (coinType, amount in token units)
                 if func_name == "buy_crypto":
                     normalized_args = {
@@ -248,12 +322,70 @@ async def process_query(query: str, ctx: Context) -> str:
                 else:
                     normalized_args = arguments
 
+                coin_type = (normalized_args.get("coin_type") or "").upper()
+                token_amount = normalized_args.get("amount")
+                # Fallback: if amount in token not provided, derive from amount_usd
+                if (token_amount is None or token_amount == "") and normalized_args.get("amount_usd") is not None:
+                    try:
+                        usd_num = Decimal(str(normalized_args.get("amount_usd")))
+                        price_num = get_price_usd_number(coin_type.lower())
+                        if price_num and price_num > 0:
+                            token_amount = (usd_num / price_num)
+                            ctx.logger.info(f"[buy_check] derived token_amount from USD: usd={usd_num} price={price_num} -> token_amount={token_amount}")
+                    except Exception:
+                        token_amount = None
+
+                # 0) Prevent insufficient canister inventory before proceeding
+                desired_e_smallest = None
+                if token_amount is not None and str(token_amount) != "":
+                    try:
+                        amt_dec = Decimal(str(token_amount))
+                        ctx.logger.info(f"[buy_check] pre-convert: token_amount={token_amount} type={type(token_amount)} dec={amt_dec}")
+                        desired_e_smallest = to_smallest(coin_type, amt_dec)
+                        ctx.logger.info(f"[buy_check] coin={coin_type} token_amount={token_amount} desired_smallest={desired_e_smallest}")
+                    except Exception as ex:
+                        ctx.logger.info(f"[buy_check] to_smallest failed: coin={coin_type} amount={token_amount} err={ex}")
+                        desired_e_smallest = None
+
+                ctx.logger.info(f"[buy_check] desired_e_smallest={desired_e_smallest}")
+                ctx.logger.info(f"[buy_check] token_amount={token_amount}")
+                ctx.logger.info(f"[buy_check] coin_type={coin_type}")
+
+                if desired_e_smallest is not None and desired_e_smallest > 0:
+                    available_smallest = 0
+                    try:
+                        wallet_canister = make_canister("wallet", get_private_key_for_sender(ctx))
+                        balances_raw = wallet_canister.canister_wallet_balance()
+                        balances = unwrap_candid(balances_raw) or {}
+                        ctx.logger.info(f"[buy_check] balances={balances}")
+                        if coin_type == "BTC":
+                            available_smallest = int(balances.get("bitcoin", 0))
+                        elif coin_type == "ETH":
+                            # ethereum balance stored as string (wei)
+                            available_smallest = int(balances.get("ethereum", "0") or 0)
+                        elif coin_type == "SOL":
+                            available_smallest = int(balances.get("solana", 0))
+                        elif coin_type == "ICP":
+                            available_smallest = int(balances.get("icp", 0))
+                        ctx.logger.info(f"[buy_check] available_smallest={available_smallest}")
+                    except Exception:
+                        # Treat unknown balance as zero to be safe
+                        available_smallest = 0
+
+                    if desired_e_smallest > available_smallest:
+                        ctx.logger.info(f"[buy_check] insufficient: desired={desired_e_smallest} available={available_smallest}")
+                        return (
+                            "Sorry, the canister balance is not sufficient to fulfill your purchase.\n"
+                            f"- Asset: {coin_type}\n"
+                            f"- Requested: {token_amount} {coin_type}\n"
+                            f"- Available: {to_amount(coin_type, available_smallest)} {coin_type}\n"
+                            "Please reduce the amount or try another asset."
+                        )
+
                 _set_pending_transfer_for_sender(ctx, {"func_name": "buy_crypto", "args": normalized_args})
 
-                coin_type = (normalized_args.get("coin_type") or "").upper()
                 # Derive user's own wallet address for the asset
                 try:
-                    wallet_canister = make_canister("wallet", get_private_key_for_sender(ctx))
                     if coin_type == "BTC":
                         destination = unwrap_candid(wallet_canister.bitcoin_address())
                     elif coin_type == "ETH":
@@ -266,7 +398,7 @@ async def process_query(query: str, ctx: Context) -> str:
                         destination = "-"
                 except Exception:
                     destination = "-"
-                token_amount = normalized_args.get("amount")
+
                 estimated_price_text = "Unavailable"
                 try:
                     if token_amount is not None:
@@ -306,7 +438,6 @@ async def process_query(query: str, ctx: Context) -> str:
                         destination = ""
                     # Estimate USD via get_crypto_price (string like "$123.45"). Fallback handled server-side.
                     price_str = await get_crypto_price(ctx, coin_type.upper(), float(token_amount))
-                    from decimal import Decimal
                     usd_value = Decimal(str(price_str).replace("$", "")) if isinstance(price_str, str) else Decimal(0)
                     amount_cents = int(usd_value * 100)
                     order_id = str(uuid4())
@@ -322,7 +453,7 @@ async def process_query(query: str, ctx: Context) -> str:
                     }
                 else:
                     result = await call_endpoint(ctx, func_name, arguments)
-                content_to_send = json.dumps(result)
+                    content_to_send = json.dumps(result)
             except Exception as e:
                 ctx.logger.error(f"Error executing tool: {str(e)}")
                 error_content = {

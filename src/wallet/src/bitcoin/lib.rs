@@ -75,3 +75,12 @@ pub struct SendRequest {
     pub destination_address: String,
     pub amount_in_satoshi: u64,
 }
+
+/// Return the current Bitcoin network as a friendly string based on init/post-upgrade settings.
+pub fn current_network_name() -> &'static str {
+    BTC_CONTEXT.with(|ctx| match ctx.get().network {
+        BitcoinNetwork::Mainnet => "mainnet",
+        BitcoinNetwork::Testnet => "testnet",
+        BitcoinNetwork::Regtest => "regtest",
+    })
+}

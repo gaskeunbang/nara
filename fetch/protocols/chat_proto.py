@@ -19,6 +19,7 @@ from utils.pricing import get_price_usd
 from utils.identity import generate_ed25519_identity
 from utils.candid import unwrap_candid
 from utils.context import get_private_key_for_sender, get_principal_for_sender
+from utils.stripe import create_checkout_session
 
 # Config
 from config.messages import help_message, welcome_message
@@ -93,44 +94,24 @@ async def call_endpoint(ctx: Context, func_name: str, args: dict):
             result = unwrap_candid(wallet_canister.solana_address())
         elif func_name == "get_icp_address":
             result = get_principal_for_sender(ctx)
-
-        elif func_name == "send_solana":
-            amount_value = args["amount"]
-            if isinstance(amount_value, float):
-                amount_value = Decimal(str(amount_value))
-            amount_lamports = to_smallest("SOL", amount_value)  # int lamports
-            result = wallet_canister.solana_send(args["destinationAddress"], amount_lamports)
-        elif func_name == "send_ethereum":
-            amount_value = args["amount"]
-            if isinstance(amount_value, float):
-                amount_value = Decimal(str(amount_value))
-            amount_wei = to_smallest("ETH", amount_value)  # int wei
-            result = wallet_canister.ethereum_send(args["destinationAddress"], amount_wei)
-        elif func_name == "send_bitcoin":
-            amount_value = args["amount"]
-            if isinstance(amount_value, float):
-                amount_value = Decimal(str(amount_value))
-            amount_satoshi = to_smallest("BTC", amount_value)  # int satoshi
-            result = wallet_canister.bitcoin_send({"destination_address": args["destinationAddress"], "amount_in_satoshi": amount_satoshi})
-        elif func_name == "send_icp":
-            amount_value = args["amount"]
-            if isinstance(amount_value, float):
-                amount_value = Decimal(str(amount_value))
-            amount_e8s = to_smallest("ICP", amount_value)  # int e8s
-
+        elif func_name == "create_stripe_checkout":
+            # Create a payment link to purchase a coin using fiat
+            coin_type = (args["coin_type"] or "").lower()
             destination = args["destinationAddress"]
-            tx_res = icp_ledger_canister.icrc1_transfer({
-                "to": {
-                    "owner": destination,
-                    "subaccount": [],
-                },
-                "amount": amount_e8s,
-                "fee": [],
-                "memo": [],
-                "from_subaccount": [],
-                "created_at_time": [],
-            })
-            result = unwrap_candid(tx_res)
+            amount_usd = args.get("amount_usd")
+            # Convert USD to cents
+            amount_cents = int(Decimal(str(amount_usd)) * 100)
+            order_id = str(uuid4())
+            session = create_checkout_session(
+                order_id=order_id,
+                coin_type=coin_type,
+                amount_minor=amount_cents,
+                destination_address=destination
+            )
+            result = {
+                "order_id": order_id,
+                "checkout_url": session.get("url")
+            }
         else:
             raise ValueError(f"Unsupported function call: {func_name}")
         
@@ -146,10 +127,48 @@ async def process_query(query: str, ctx: Context) -> str:
             user_answer = (query or "").strip().lower()
             if user_answer == "yes":
                 try:
-                    result = await call_endpoint(ctx, pending["func_name"], pending["args"])
+                    # Special-case: buy flow should create Stripe session, not call canister
+                    if pending.get("func_name") == "buy_crypto":
+                        normalized = pending.get("args", {})
+                        coin_type = (normalized.get("coin_type") or "").lower()
+                        token_amount = normalized.get("amount")
+                        # Derive destination address from user's own wallet
+                        wallet_canister = make_canister("wallet", get_private_key_for_sender(ctx))
+                        if coin_type.upper() == "BTC":
+                            destination = unwrap_candid(wallet_canister.bitcoin_address())
+                        elif coin_type.upper() == "ETH":
+                            destination = unwrap_candid(wallet_canister.ethereum_address())
+                        elif coin_type.upper() == "SOL":
+                            destination = unwrap_candid(wallet_canister.solana_address())
+                        elif coin_type.upper() == "ICP":
+                            destination = get_principal_for_sender(ctx)
+                        else:
+                            destination = ""
+
+                        # Estimate USD via get_crypto_price and create checkout
+                        price_str = await get_crypto_price(ctx, coin_type.upper(), float(token_amount))
+                        from decimal import Decimal
+                        usd_value = Decimal(str(price_str).replace("$", "")) if isinstance(price_str, str) else Decimal(0)
+                        amount_cents = int(usd_value * 100)
+                        order_id = str(uuid4())
+                        session = create_checkout_session(
+                            order_id=order_id,
+                            coin_type=coin_type,
+                            amount_minor=amount_cents,
+                            destination_address=destination,
+                        )
+                        checkout_url = session.get("url")
+                        result_text = (
+                            "Payment link berhasil dibuat.\n"
+                            f"Order ID: {order_id}\n"
+                            f"Bayar di sini: {checkout_url}\n"
+                            "Catatan: link pembayaran akan kedaluwarsa dalam 5 menit."
+                        )
+                    else:
+                        result = await call_endpoint(ctx, pending["func_name"], pending["args"])
+
                     _clear_pending_transfer_for_sender(ctx)
-                    # Return raw result only (no manual success text)
-                    return json.dumps(result)
+                    return result_text if pending.get("func_name") == "buy_crypto" else json.dumps(result)
                 except Exception as e:
                     _clear_pending_transfer_for_sender(ctx)
                     return f"Transfer failed: {str(e)}"
@@ -193,6 +212,7 @@ async def process_query(query: str, ctx: Context) -> str:
             tool_call_id = tool_call["id"]
 
             is_send = func_name in {"send_solana", "send_ethereum", "send_bitcoin", "send_icp"}
+            is_buy = func_name in {"buy_crypto", "create_stripe_checkout"}
             if is_send:
                 # Save pending transfer and ask for confirmation
                 _set_pending_transfer_for_sender(ctx, {"func_name": func_name, "args": arguments})
@@ -218,10 +238,90 @@ async def process_query(query: str, ctx: Context) -> str:
                     "- Estimated fee: 0.0001 (static)\n"
                 )
                 return confirmation_text
+            elif is_buy:
+                # Normalize arguments for buy flow (coinType, amount in token units)
+                if func_name == "buy_crypto":
+                    normalized_args = {
+                        "coin_type": (arguments.get("coinType") or "").lower(),
+                        "amount": arguments.get("amount"),
+                    }
+                else:
+                    normalized_args = arguments
+
+                _set_pending_transfer_for_sender(ctx, {"func_name": "buy_crypto", "args": normalized_args})
+
+                coin_type = (normalized_args.get("coin_type") or "").upper()
+                # Derive user's own wallet address for the asset
+                try:
+                    wallet_canister = make_canister("wallet", get_private_key_for_sender(ctx))
+                    if coin_type == "BTC":
+                        destination = unwrap_candid(wallet_canister.bitcoin_address())
+                    elif coin_type == "ETH":
+                        destination = unwrap_candid(wallet_canister.ethereum_address())
+                    elif coin_type == "SOL":
+                        destination = unwrap_candid(wallet_canister.solana_address())
+                    elif coin_type == "ICP":
+                        destination = get_principal_for_sender(ctx)
+                    else:
+                        destination = "-"
+                except Exception:
+                    destination = "-"
+                token_amount = normalized_args.get("amount")
+                estimated_price_text = "Unavailable"
+                try:
+                    if token_amount is not None:
+                        estimated_price_text = await get_crypto_price(ctx, coin_type, float(token_amount))
+                except Exception:
+                    estimated_price_text = "Unavailable"
+
+                confirmation_text = (
+                    "Please confirm your purchase request.\n\n"
+                    "Do you want to proceed to create a payment link? "
+                    "Type 'yes' to proceed, or type anything else to cancel.\n\n"
+                    f"- Asset: {coin_type}\n"
+                    f"- Destination: {destination}\n"
+                    f"- Amount: {token_amount} {coin_type}\n"
+                    f"- Estimated price to pay (USD): {estimated_price_text}\n"
+                )
+                return confirmation_text
 
             # Non-transfer tool: execute immediately
             try:
-                result = await call_endpoint(ctx, func_name, arguments)
+                if func_name == "buy_crypto" and _get_pending_transfer_for_sender(ctx):
+                    # If user confirmed "yes", create the checkout session now
+                    # Convert token amount to USD cents using price utility
+                    coin_type = (arguments.get("coinType") or arguments.get("coin_type") or "").lower()
+                    token_amount = arguments.get("amount")
+                    # Derive destination address from user's own wallet
+                    wallet_canister = make_canister("wallet", get_private_key_for_sender(ctx))
+                    if coin_type.upper() == "BTC":
+                        destination = unwrap_candid(wallet_canister.bitcoin_address())
+                    elif coin_type.upper() == "ETH":
+                        destination = unwrap_candid(wallet_canister.ethereum_address())
+                    elif coin_type.upper() == "SOL":
+                        destination = unwrap_candid(wallet_canister.solana_address())
+                    elif coin_type.upper() == "ICP":
+                        destination = get_principal_for_sender(ctx)
+                    else:
+                        destination = ""
+                    # Estimate USD via get_crypto_price (string like "$123.45"). Fallback handled server-side.
+                    price_str = await get_crypto_price(ctx, coin_type.upper(), float(token_amount))
+                    from decimal import Decimal
+                    usd_value = Decimal(str(price_str).replace("$", "")) if isinstance(price_str, str) else Decimal(0)
+                    amount_cents = int(usd_value * 100)
+                    order_id = str(uuid4())
+                    session = create_checkout_session(
+                        order_id=order_id,
+                        coin_type=coin_type,
+                        amount_minor=amount_cents,
+                        destination_address=destination,
+                    )
+                    result = {
+                        "order_id": order_id,
+                        "checkout_url": session.get("url"),
+                    }
+                else:
+                    result = await call_endpoint(ctx, func_name, arguments)
                 content_to_send = json.dumps(result)
             except Exception as e:
                 ctx.logger.error(f"Error executing tool: {str(e)}")

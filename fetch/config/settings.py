@@ -11,4 +11,4 @@ ASI1_HEADERS = {
 # Stripe API settings
 STRIPE_API_URL = "https://api.stripe.com/v1"
 STRIPE_API_KEY = os.getenv("STRIPE_API_KEY")
-STRIPE_WEBHOOK_URL = os.getenv("WEBHOOK_URL")
+STRIPE_WEBHOOK_URL = os.getenv("STRIPE_WEBHOOK_URL")

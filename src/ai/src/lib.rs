@@ -433,15 +433,26 @@ fn predict_slippage(features: Vec<f64>) -> Result<f64, ApiError> {
 }
 
 // ============================================================================
-// EXPANDED MARKET DATA FETCHING (4 EXCHANGES)
+// ENHANCED MARKET DATA FETCHING WITH DEBUG LOGGING
 // ============================================================================
 
 #[update]
 async fn fetch_market_data(exchange: String, symbol: String) -> Result<MarketData, ApiError> {
-    let url = build_market_data_url(&exchange, &symbol)?;
+    ic_cdk::println!("🔄 Starting fetch for exchange: {}, symbol: {}", exchange, symbol);
+    
+    let url = match build_market_data_url(&exchange, &symbol) {
+        Ok(url) => {
+            ic_cdk::println!("✅ Built URL for {}: {}", exchange, url);
+            url
+        },
+        Err(e) => {
+            ic_cdk::println!("❌ Failed to build URL for {}: {:?}", exchange, e);
+            return Err(e);
+        }
+    };
     
     let request = CanisterHttpRequestArgument {
-        url,
+        url: url.clone(),
         method: HttpMethod::GET,
         body: None,
         max_response_bytes: Some(1000000),
@@ -462,77 +473,231 @@ async fn fetch_market_data(exchange: String, symbol: String) -> Result<MarketDat
         ],
     };
 
+    ic_cdk::println!("🌐 Making HTTP request to {} for {}", exchange, symbol);
+    
     match ic_cdk::api::management_canister::http_request::http_request(request, 25_000_000_000).await {
         Ok((response,)) => {
-            parse_market_data_response(&exchange, &response.body)
+            ic_cdk::println!("📡 HTTP Response from {} - Status: {:?}, Body length: {}", 
+                exchange, response.status, response.body.len());
+            
+            // Log first 500 chars of response for debugging
+            let body_preview = String::from_utf8_lossy(&response.body);
+            let preview = if body_preview.len() > 500 {
+                &body_preview[..500]
+            } else {
+                &body_preview
+            };
+            ic_cdk::println!("📄 Response preview from {}: {}", exchange, preview);
+            
+            let result = parse_market_data_response(&exchange, &response.body);
+            match &result {
+                Ok(data) => {
+                    ic_cdk::println!("✅ Successfully parsed {} data - {} bids, {} asks", 
+                        exchange, data.bids.len(), data.asks.len());
+                    if !data.bids.is_empty() {
+                        ic_cdk::println!("   Best bid: ${:.2} (vol: {:.4})", data.bids[0].0, data.bids[0].1);
+                    }
+                    if !data.asks.is_empty() {
+                        ic_cdk::println!("   Best ask: ${:.2} (vol: {:.4})", data.asks[0].0, data.asks[0].1);
+                    }
+                },
+                Err(e) => {
+                    ic_cdk::println!("❌ Failed to parse {} response: {:?}", exchange, e);
+                }
+            }
+            result
         }
-        Err(e) => Err(ApiError::NetworkError(format!("HTTP request failed: {:?}", e))),
+        Err(e) => {
+            ic_cdk::println!("❌ HTTP request failed for {}: {:?}", exchange, e);
+            Err(ApiError::NetworkError(format!("HTTP request failed for {}: {:?}", exchange, e)))
+        }
+    }
+}
+fn get_exchange_symbol(exchange: &str, symbol: &str) -> Option<String> {
+    match (exchange.to_lowercase().as_str(), symbol) {
+        // Binance mappings
+        ("binance", "BTC/USDT") => Some("BTCUSDT".to_string()),
+        ("binance", "ETH/USDT") => Some("ETHUSDT".to_string()),
+        ("binance", "BNB/USDT") => Some("BNBUSDT".to_string()),
+        ("binance", "ADA/USDT") => Some("ADAUSDT".to_string()),
+        ("binance", "SOL/USDT") => Some("SOLUSDT".to_string()),
+        ("binance", "XRP/USDT") => Some("XRPUSDT".to_string()),
+        ("binance", "DOT/USDT") => Some("DOTUSDT".to_string()),
+        ("binance", "AVAX/USDT") => Some("AVAXUSDT".to_string()),
+        ("binance", "MATIC/USDT") => Some("MATICUSDT".to_string()),
+        ("binance", "LINK/USDT") => Some("LINKUSDT".to_string()),
+        
+        // Kraken mappings
+        ("kraken", "BTC/USDT") => Some("BTCUSD".to_string()),
+        ("kraken", "ETH/USDT") => Some("ETHUSD".to_string()),
+        ("kraken", "ADA/USDT") => Some("ADAUSD".to_string()),
+        ("kraken", "SOL/USDT") => Some("SOLUSD".to_string()),
+        ("kraken", "XRP/USDT") => Some("XRPUSD".to_string()),
+        ("kraken", "DOT/USDT") => Some("DOTUSD".to_string()),
+        ("kraken", "AVAX/USDT") => Some("AVAXUSD".to_string()),
+        ("kraken", "MATIC/USDT") => Some("MATICUSD".to_string()),
+        ("kraken", "LINK/USDT") => Some("LINKUSD".to_string()),
+        
+        // Coinbase mappings
+        ("coinbase", "BTC/USDT") => Some("BTC-USD".to_string()),
+        ("coinbase", "ETH/USDT") => Some("ETH-USD".to_string()),
+        ("coinbase", "ADA/USDT") => Some("ADA-USD".to_string()),
+        ("coinbase", "SOL/USDT") => Some("SOL-USD".to_string()),
+        ("coinbase", "XRP/USDT") => Some("XRP-USD".to_string()),
+        ("coinbase", "DOT/USDT") => Some("DOT-USD".to_string()),
+        ("coinbase", "AVAX/USDT") => Some("AVAX-USD".to_string()),
+        ("coinbase", "MATIC/USDT") => Some("MATIC-USD".to_string()),
+        ("coinbase", "LINK/USDT") => Some("LINK-USD".to_string()),
+        
+        // OKX mappings
+        ("okx", "BTC/USDT") => Some("BTC-USDT".to_string()),
+        ("okx", "ETH/USDT") => Some("ETH-USDT".to_string()),
+        ("okx", "ADA/USDT") => Some("ADA-USDT".to_string()),
+        ("okx", "SOL/USDT") => Some("SOL-USDT".to_string()),
+        ("okx", "XRP/USDT") => Some("XRP-USDT".to_string()),
+        ("okx", "DOT/USDT") => Some("DOT-USDT".to_string()),
+        ("okx", "AVAX/USDT") => Some("AVAX-USDT".to_string()),
+        ("okx", "LINK/USDT") => Some("LINK-USDT".to_string()),
+        
+        _ => None,
     }
 }
 
 fn build_market_data_url(exchange: &str, symbol: &str) -> Result<String, ApiError> {
-    let url = match exchange.to_lowercase().as_str() {
+    ic_cdk::println!("Building URL for exchange: {}, symbol: {}", exchange, symbol);
+    
+    let scraper_api_key = "api menyala abangku";
+
+    // Get the correct symbol format for this exchange
+    let exchange_symbol = get_exchange_symbol(exchange, symbol)
+        .ok_or_else(|| {
+            ic_cdk::println!("Symbol {} not supported on {}", symbol, exchange);
+            ApiError::ExchangeError(format!("Symbol {} not supported on exchange {}", symbol, exchange))
+        })?;
+
+    ic_cdk::println!("Mapped symbol: {} -> {}", symbol, exchange_symbol);
+
+    // Build the exchange-specific URL
+    let exchange_url = match exchange.to_lowercase().as_str() {
         "binance" => {
-            let formatted_symbol = symbol.replace("/", "");
-            format!("https://api.binance.com/api/v3/depth?symbol={}&limit=20", formatted_symbol)
+            format!("https://api.binance.com/api/v3/depth?symbol={}&limit=20", exchange_symbol)
         },
         "kraken" => {
-            let formatted_symbol = symbol.replace("/", "");
-            format!("https://api.kraken.com/0/public/Depth?pair={}&count=20", formatted_symbol)
+            format!("https://api.kraken.com/0/public/Depth?pair={}&count=20", exchange_symbol)
         },
         "coinbase" => {
-            format!("https://api.exchange.coinbase.com/products/{}/book?level=2", symbol)
+            format!("https://api.exchange.coinbase.com/products/{}/book?level=2", exchange_symbol)
         },
         "okx" => {
-            let formatted_symbol = symbol.replace("/", "-");
-            format!("https://www.okx.com/api/v5/market/books?instId={}&sz=20", formatted_symbol)
+            format!("https://www.okx.com/api/v5/market/books?instId={}&sz=20", exchange_symbol)
         },
-        _ => return Err(ApiError::ExchangeError(format!("Unsupported exchange: {}", exchange))),
+        _ => {
+            return Err(ApiError::ExchangeError(format!("Unsupported exchange: {}", exchange)));
+        }
     };
-    
-    Ok(url)
+
+    // Wrap with ScraperAPI
+    let wrapped_url = format!(
+        "https://api.scraperapi.com/?api_key={}&url={}",
+        scraper_api_key,
+        urlencoding::encode(&exchange_url)
+    );
+
+    Ok(wrapped_url)
 }
 
 fn parse_market_data_response(exchange: &str, body: &[u8]) -> Result<MarketData, ApiError> {
-    let json_str = String::from_utf8(body.to_vec())
-        .map_err(|e| ApiError::NetworkError(format!("Invalid UTF-8: {}", e)))?;
+    ic_cdk::println!("🔍 Parsing response for exchange: {}", exchange);
     
-    let json: Value = serde_json::from_str(&json_str)
-        .map_err(|e| ApiError::NetworkError(format!("Invalid JSON: {}", e)))?;
+    let json_str = match String::from_utf8(body.to_vec()) {
+        Ok(s) => {
+            ic_cdk::println!("✅ Successfully converted body to UTF-8 string for {}", exchange);
+            s
+        },
+        Err(e) => {
+            ic_cdk::println!("❌ Failed to convert body to UTF-8 for {}: {}", exchange, e);
+            return Err(ApiError::NetworkError(format!("Invalid UTF-8 from {}: {}", exchange, e)));
+        }
+    };
+    
+    let json: Value = match serde_json::from_str(&json_str) {
+        Ok(j) => {
+            ic_cdk::println!("✅ Successfully parsed JSON for {}", exchange);
+            j
+        },
+        Err(e) => {
+            ic_cdk::println!("❌ Failed to parse JSON for {}: {}", exchange, e);
+            ic_cdk::println!("📄 Raw response: {}", json_str);
+            return Err(ApiError::NetworkError(format!("Invalid JSON from {}: {}", exchange, e)));
+        }
+    };
 
-    match exchange.to_lowercase().as_str() {
+    // Log the JSON structure for debugging
+    ic_cdk::println!("🔍 JSON keys for {}: {:?}", exchange, 
+        json.as_object().map(|obj| obj.keys().collect::<Vec<_>>()).unwrap_or_default());
+
+    let result = match exchange.to_lowercase().as_str() {
         "binance" => parse_binance_response(&json),
         "kraken" => parse_kraken_response(&json),
         "coinbase" => parse_coinbase_response(&json),
         "okx" => parse_okx_response(&json),
         _ => Err(ApiError::ExchangeError("Unsupported exchange".to_string())),
+    };
+
+    match &result {
+        Ok(_) => ic_cdk::println!("✅ Successfully parsed market data for {}", exchange),
+        Err(e) => ic_cdk::println!("❌ Failed to parse market data for {}: {:?}", exchange, e),
     }
+
+    result
 }
 
 fn parse_binance_response(json: &Value) -> Result<MarketData, ApiError> {
-    let bids = json["bids"]
+    ic_cdk::println!("🔍 Parsing Binance response structure");
+    
+    // Check if this is an error response
+    if let Some(code) = json.get("code") {
+        let msg = json.get("msg").and_then(|m| m.as_str()).unwrap_or("Unknown error");
+        ic_cdk::println!("❌ Binance API error - Code: {:?}, Message: {}", code, msg);
+        return Err(ApiError::ExchangeError(format!("Binance API error: {}", msg)));
+    }
+    
+    let bids: Vec<(f64, f64)> = json["bids"]
         .as_array()
-        .ok_or(ApiError::NetworkError("No bids data".to_string()))?
+        .ok_or_else(|| {
+            ic_cdk::println!("❌ Binance: No bids array found. Available keys: {:?}", 
+                json.as_object().map(|obj| obj.keys().collect::<Vec<_>>()).unwrap_or_default());
+            ApiError::NetworkError("Binance: No bids data".to_string())
+        })?
         .iter()
         .take(20)
         .filter_map(|bid| {
-            let price = bid[0].as_str()?.parse().ok()?;
-            let volume = bid[1].as_str()?.parse().ok()?;
+            let price_str = bid.get(0)?.as_str()?;
+            let volume_str = bid.get(1)?.as_str()?;
+            let price: f64 = price_str.parse().ok()?;
+            let volume: f64 = volume_str.parse().ok()?;
             Some((price, volume))
         })
         .collect();
 
-    let asks = json["asks"]
+    let asks: Vec<(f64, f64)> = json["asks"]
         .as_array()
-        .ok_or(ApiError::NetworkError("No asks data".to_string()))?
+        .ok_or_else(|| {
+            ic_cdk::println!("❌ Binance: No asks array found");
+            ApiError::NetworkError("Binance: No asks data".to_string())
+        })?
         .iter()
         .take(20)
         .filter_map(|ask| {
-            let price = ask[0].as_str()?.parse().ok()?;
-            let volume = ask[1].as_str()?.parse().ok()?;
+            let price_str = ask.get(0)?.as_str()?;
+            let volume_str = ask.get(1)?.as_str()?;
+            let price: f64 = price_str.parse().ok()?;
+            let volume: f64 = volume_str.parse().ok()?;
             Some((price, volume))
         })
         .collect();
+
+    ic_cdk::println!("✅ Binance parsed: {} bids, {} asks", bids.len(), asks.len());
 
     Ok(MarketData {
         bids,
@@ -543,38 +708,73 @@ fn parse_binance_response(json: &Value) -> Result<MarketData, ApiError> {
 }
 
 fn parse_kraken_response(json: &Value) -> Result<MarketData, ApiError> {
+    ic_cdk::println!("🔍 Parsing Kraken response structure");
+    
+    // Check for error
+    if let Some(error) = json.get("error").and_then(|e| e.as_array()) {
+        if !error.is_empty() {
+            let error_msg = error.iter()
+                .filter_map(|e| e.as_str())
+                .collect::<Vec<_>>()
+                .join(", ");
+            ic_cdk::println!("❌ Kraken API error: {}", error_msg);
+            return Err(ApiError::ExchangeError(format!("Kraken API error: {}", error_msg)));
+        }
+    }
+    
     let result = json["result"]
         .as_object()
-        .ok_or(ApiError::NetworkError("No result data".to_string()))?;
+        .ok_or_else(|| {
+            ic_cdk::println!("❌ Kraken: No result object found. Available keys: {:?}", 
+                json.as_object().map(|obj| obj.keys().collect::<Vec<_>>()).unwrap_or_default());
+            ApiError::NetworkError("Kraken: No result data".to_string())
+        })?;
+    
+    ic_cdk::println!("🔍 Kraken result keys: {:?}", result.keys().collect::<Vec<_>>());
     
     let pair_data = result
         .values()
         .next()
-        .ok_or(ApiError::NetworkError("No pair data".to_string()))?;
+        .ok_or_else(|| {
+            ic_cdk::println!("❌ Kraken: No pair data in result");
+            ApiError::NetworkError("Kraken: No pair data".to_string())
+        })?;
 
-    let bids = pair_data["bids"]
+    let bids: Vec<(f64, f64)> = pair_data["bids"]
         .as_array()
-        .ok_or(ApiError::NetworkError("No bids data".to_string()))?
+        .ok_or_else(|| {
+            ic_cdk::println!("❌ Kraken: No bids array in pair data");
+            ApiError::NetworkError("Kraken: No bids data".to_string())
+        })?
         .iter()
         .take(20)
         .filter_map(|bid| {
-            let price = bid[0].as_str()?.parse().ok()?;
-            let volume = bid[1].as_str()?.parse().ok()?;
+            let price_str = bid.get(0)?.as_str()?;
+            let volume_str = bid.get(1)?.as_str()?;
+            let price: f64 = price_str.parse().ok()?;
+            let volume: f64 = volume_str.parse().ok()?;
             Some((price, volume))
         })
         .collect();
 
-    let asks = pair_data["asks"]
+    let asks: Vec<(f64, f64)> = pair_data["asks"]
         .as_array()
-        .ok_or(ApiError::NetworkError("No asks data".to_string()))?
+        .ok_or_else(|| {
+            ic_cdk::println!("❌ Kraken: No asks array in pair data");
+            ApiError::NetworkError("Kraken: No asks data".to_string())
+        })?
         .iter()
         .take(20)
         .filter_map(|ask| {
-            let price = ask[0].as_str()?.parse().ok()?;
-            let volume = ask[1].as_str()?.parse().ok()?;
+            let price_str = ask.get(0)?.as_str()?;
+            let volume_str = ask.get(1)?.as_str()?;
+            let price: f64 = price_str.parse().ok()?;
+            let volume: f64 = volume_str.parse().ok()?;
             Some((price, volume))
         })
         .collect();
+
+    ic_cdk::println!("✅ Kraken parsed: {} bids, {} asks", bids.len(), asks.len());
 
     Ok(MarketData {
         bids,
@@ -585,29 +785,50 @@ fn parse_kraken_response(json: &Value) -> Result<MarketData, ApiError> {
 }
 
 fn parse_coinbase_response(json: &Value) -> Result<MarketData, ApiError> {
-    let bids = json["bids"]
+    ic_cdk::println!("🔍 Parsing Coinbase response structure");
+    
+    // Check for error message
+    if let Some(message) = json.get("message").and_then(|m| m.as_str()) {
+        ic_cdk::println!("❌ Coinbase API error: {}", message);
+        return Err(ApiError::ExchangeError(format!("Coinbase API error: {}", message)));
+    }
+    
+    let bids: Vec<(f64, f64)> = json["bids"]
         .as_array()
-        .ok_or(ApiError::NetworkError("No bids data".to_string()))?
+        .ok_or_else(|| {
+            ic_cdk::println!("❌ Coinbase: No bids array found. Available keys: {:?}", 
+                json.as_object().map(|obj| obj.keys().collect::<Vec<_>>()).unwrap_or_default());
+            ApiError::NetworkError("Coinbase: No bids data".to_string())
+        })?
         .iter()
         .take(20)
         .filter_map(|bid| {
-            let price = bid[0].as_str()?.parse().ok()?;
-            let volume = bid[1].as_str()?.parse().ok()?;
+            let price_str = bid.get(0)?.as_str()?;
+            let volume_str = bid.get(1)?.as_str()?;
+            let price: f64 = price_str.parse().ok()?;
+            let volume: f64 = volume_str.parse().ok()?;
             Some((price, volume))
         })
         .collect();
 
-    let asks = json["asks"]
+    let asks: Vec<(f64, f64)> = json["asks"]
         .as_array()
-        .ok_or(ApiError::NetworkError("No asks data".to_string()))?
+        .ok_or_else(|| {
+            ic_cdk::println!("❌ Coinbase: No asks array found");
+            ApiError::NetworkError("Coinbase: No asks data".to_string())
+        })?
         .iter()
         .take(20)
         .filter_map(|ask| {
-            let price = ask[0].as_str()?.parse().ok()?;
-            let volume = ask[1].as_str()?.parse().ok()?;
+            let price_str = ask.get(0)?.as_str()?;
+            let volume_str = ask.get(1)?.as_str()?;
+            let price: f64 = price_str.parse().ok()?;
+            let volume: f64 = volume_str.parse().ok()?;
             Some((price, volume))
         })
         .collect();
+
+    ic_cdk::println!("✅ Coinbase parsed: {} bids, {} asks", bids.len(), asks.len());
 
     Ok(MarketData {
         bids,
@@ -618,34 +839,65 @@ fn parse_coinbase_response(json: &Value) -> Result<MarketData, ApiError> {
 }
 
 fn parse_okx_response(json: &Value) -> Result<MarketData, ApiError> {
+    ic_cdk::println!("🔍 Parsing OKX response structure");
+    
+    // Check for error
+    if let Some(code) = json.get("code").and_then(|c| c.as_str()) {
+        if code != "0" {
+            let msg = json.get("msg").and_then(|m| m.as_str()).unwrap_or("Unknown error");
+            ic_cdk::println!("❌ OKX API error - Code: {}, Message: {}", code, msg);
+            return Err(ApiError::ExchangeError(format!("OKX API error: {}", msg)));
+        }
+    }
+    
     let data = json["data"]
         .as_array()
         .and_then(|arr| arr.get(0))
-        .ok_or(ApiError::NetworkError("No data".to_string()))?;
+        .ok_or_else(|| {
+            ic_cdk::println!("❌ OKX: No data array found or empty. Available keys: {:?}", 
+                json.as_object().map(|obj| obj.keys().collect::<Vec<_>>()).unwrap_or_default());
+            if let Some(data_arr) = json.get("data").and_then(|d| d.as_array()) {
+                ic_cdk::println!("   Data array length: {}", data_arr.len());
+            }
+            ApiError::NetworkError("OKX: No data".to_string())
+        })?;
 
-    let bids = data["bids"]
+    let bids: Vec<(f64, f64)> = data["bids"]
         .as_array()
-        .ok_or(ApiError::NetworkError("No bids data".to_string()))?
+        .ok_or_else(|| {
+            ic_cdk::println!("❌ OKX: No bids array in data. Data keys: {:?}", 
+                data.as_object().map(|obj| obj.keys().collect::<Vec<_>>()).unwrap_or_default());
+            ApiError::NetworkError("OKX: No bids data".to_string())
+        })?
         .iter()
         .take(20)
         .filter_map(|bid| {
-            let price = bid[0].as_str()?.parse().ok()?;
-            let volume = bid[1].as_str()?.parse().ok()?;
+            let price_str = bid.get(0)?.as_str()?;
+            let volume_str = bid.get(1)?.as_str()?;
+            let price: f64 = price_str.parse().ok()?;
+            let volume: f64 = volume_str.parse().ok()?;
             Some((price, volume))
         })
         .collect();
 
-    let asks = data["asks"]
+    let asks: Vec<(f64, f64)> = data["asks"]
         .as_array()
-        .ok_or(ApiError::NetworkError("No asks data".to_string()))?
+        .ok_or_else(|| {
+            ic_cdk::println!("❌ OKX: No asks array in data");
+            ApiError::NetworkError("OKX: No asks data".to_string())
+        })?
         .iter()
         .take(20)
         .filter_map(|ask| {
-            let price = ask[0].as_str()?.parse().ok()?;
-            let volume = ask[1].as_str()?.parse().ok()?;
+            let price_str = ask.get(0)?.as_str()?;
+            let volume_str = ask.get(1)?.as_str()?;
+            let price: f64 = price_str.parse().ok()?;
+            let volume: f64 = volume_str.parse().ok()?;
             Some((price, volume))
         })
         .collect();
+
+    ic_cdk::println!("✅ OKX parsed: {} bids, {} asks", bids.len(), asks.len());
 
     Ok(MarketData {
         bids,
@@ -657,6 +909,10 @@ fn parse_okx_response(json: &Value) -> Result<MarketData, ApiError> {
 
 #[query]
 fn transform_response(args: TransformArgs) -> HttpResponse {
+    // Log the transform for debugging
+    ic_cdk::println!("🔄 Transform called - Status: {:?}, Body length: {}", 
+        args.response.status, args.response.body.len());
+    
     HttpResponse {
         status: args.response.status.clone(),
         body: args.response.body.clone(),

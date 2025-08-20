@@ -8,6 +8,7 @@ function App() {
   const bg1 = `${basePath}assets/background-1.png`;
   const bg2 = `${basePath}assets/background-2.png`;
   const ornament = `${basePath}assets/ornamen-bg.png`;
+  const imageWrapper = `${basePath}assets/image-wrapper.png`;
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
@@ -150,8 +151,48 @@ function App() {
                 alt="ornament"
                 className="pointer-events-none select-none absolute  -top-16 sm:-top-20  opacity-60"
               />
-              {/* placeholder content area matching reference proportion */}
-              <div className="min-h-[520px] sm:min-h-[560px] p-6 sm:p-8 lg:p-10" />
+              {/* Top content */}
+              <div className="relative p-6 sm:p-8 lg:p-12">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-16 items-start">
+                  <div className="md:col-span-7">
+                    <h2 className="text-white font-normal tracking-tight leading-tight text-[56px] sm:text-6xl lg:text-[56px]">
+                      Simple, Transparent, Secure
+                    </h2>
+                  </div>
+                  <div className="md:col-span-5">
+                    <p className="text-white/80 text-[18px] font-normal sm:text-base leading-relaxed">
+                      You can manage BTC/ETH/SOL faster with fewer errors, view transparent fees, buy at competitive rates with AI price picks and comparisons, and stay protected by network validation and real-time monitoring.
+                    </p>
+                    <button className="mt-6 inline-flex h-11 items-center justify-center rounded-full border border-white/20 px-5 text-white/90 hover:bg-white/10 transition">
+                      <span className="mr-2">Get setup in 9 minutes</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+                        <path d="M12.97 5.47a.75.75 0 0 1 1.06 0l5.25 5.25a.75.75 0 0 1 0 1.06l-5.25 5.25a.75.75 0 1 1-1.06-1.06l3.97-3.97H5.75a.75.75 0 0 1 0-1.5h11.19l-3.97-3.97a.75.75 0 0 1 0-1.06Z" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Grid cards */}
+              <div className="px-6 pb-10 sm:px-8 lg:px-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-7">
+                  {Array.from({ length: 8 }).map((_, idx) => (
+                    <div
+                      key={idx}
+                      className="rounded-2xl bg-[#151515] ring-1 ring-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)] overflow-hidden"
+                    >
+                      <div className="p-4">
+                        <img
+                          src={imageWrapper}
+                          alt="feature placeholder"
+                          className="w-full rounded-xl object-cover pointer-events-none select-none"
+                          style={{ aspectRatio: '16/11' }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </section>

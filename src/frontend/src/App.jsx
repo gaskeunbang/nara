@@ -7,6 +7,7 @@ function App() {
   const basePath = import.meta?.env?.BASE_URL ?? '/';
   const bg1 = `${basePath}assets/background-1.png`;
   const bg2 = `${basePath}assets/background-2.png`;
+  const ornament = `${basePath}assets/ornamen-bg.png`;
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
@@ -38,6 +39,11 @@ function App() {
           {/* Top blur overlay to blend background with navbar */}
           <div className="absolute inset-x-0 top-0 h-20 sm:h-24 md:h-28 z-[5] pointer-events-none">
             <div className="h-full bg-gradient-to-b from-white/90 via-white/60 to-transparent backdrop-blur-sm md:backdrop-blur-md" />
+          </div>
+
+          {/* Bottom blur overlay to blend background-2 with page */}
+          <div className="absolute inset-x-0 bottom-0 h-10 z-[5] pointer-events-none">
+            <div className="h-full bg-gradient-to-t from-white/90 via-white/60 to-transparent backdrop-blur-sm md:backdrop-blur-md" />
           </div>
 
           <Container className="relative z-10 pt-16 pb-24">
@@ -82,13 +88,13 @@ function App() {
 
               {/* Card: How it works (dark) */}
               <div className="relative w-full bg-white md:w-[480px] h-auto md:h-[474px] rounded-[28px] border border-white/10 shadow-[0_24px_64px_rgba(2,6,23,0.36)] overflow-hidden p-2">
-                <div className="bg-[#070707] text-white rounded-[22px] md:rounded-[24px] w-full h-full pt-8 pr-8 pb-8 overflow-hidden">
+                <div className="bg-[#070707] text-white rounded-[22px] md:rounded-[24px] w-full h-full pt-8 pb-8 overflow-hidden">
                   <h3 className="text-[28px] pl-8 font-normal">How it works</h3>
                   <p className="mt-2 text-[16px] pl-8 font-normal text-white/75 max-w-md leading-relaxed">
                     Chat your request: Agent Wallet handles addresses, balances, transfers, and fiat checkout. Agent Conversion delivers live, compared prices and best picks
                   </p>
                   <img
-                    src="/assets/how-it-works2.png"
+                    src="/assets/how-it-works3.png"
                     alt="how it works"
                     className="mt-8 w-full max-w-[560px]"
                   />
@@ -129,6 +135,25 @@ function App() {
               </div>
             </div>
           </Container>
+        </section>
+
+
+        {/* Section 2: Features wrapper */}
+        <section id="features" className="relative pb-8">
+
+          <div className="relative z-10">
+            <div className="relative max-w-[1380px] mx-auto overflow-hidden rounded-[20px] md:rounded-[24px] bg-[#111111] ring-1 ring-white/10 shadow-[0_24px_64px_rgba(2,6,23,0.35)]">
+              {/* soft top glow */}
+              {/* <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(900px_220px_at_50%_-60px,rgba(255,255,255,0.08),transparent)]" /> */}
+              <img
+                src={ornament}
+                alt="ornament"
+                className="pointer-events-none select-none absolute  -top-16 sm:-top-20  opacity-60"
+              />
+              {/* placeholder content area matching reference proportion */}
+              <div className="min-h-[520px] sm:min-h-[560px] p-6 sm:p-8 lg:p-10" />
+            </div>
+          </div>
         </section>
       </main>
     </div>

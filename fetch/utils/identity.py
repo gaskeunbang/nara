@@ -16,22 +16,22 @@ def principal_from_der_pubkey(der_pubkey: bytes) -> str:
     return text_encode_principal(body)
 
 def _normalize_privkey_to_hex(priv_key: str) -> str:
-    """Terima private key dalam bentuk:
-    - hex (langsung)
-    - PEM (berheader) PKCS8
-    - base64 body dari PEM PKCS8 (tanpa header)
-    dan kembalikan hex 32-byte (Ed25519 Raw).
+    """Accept private key in forms of:
+    - hex (direct)
+    - PEM (with header) PKCS8
+    - base64 body from PEM PKCS8 (without header)
+    and return 32-byte hex (Ed25519 Raw).
     """
     s = (priv_key or "").strip()
-    # Jika sudah hex valid
+    # If already a valid hex
     if re.fullmatch(r"[0-9a-fA-F]+", s) and len(s) % 2 == 0:
         return s.lower()
-    # Jika string mengandung header PEM
+    # If the string contains a PEM header
     if "-----BEGIN" in s:
         key = load_pem_private_key(s.encode("utf-8"), password=None)
         raw = key.private_bytes(Encoding.Raw, PrivateFormat.Raw, NoEncryption())
         return raw.hex()
-    # Coba asumsikan base64 body (DER PKCS8)
+    # Try to assume base64 body (DER PKCS8)
     try:
         der = base64.b64decode(s)
         key = load_der_private_key(der, password=None)
@@ -39,25 +39,25 @@ def _normalize_privkey_to_hex(priv_key: str) -> str:
         return raw.hex()
     except Exception:
         pass
-    raise ValueError("Unsupported private key format. Provide hex, PEM, atau base64 PKCS8 body.")
+    raise ValueError("Unsupported private key format. Provide hex, PEM, or base64 PKCS8 body.")
 
 def _normalize_privkey_to_hex(priv_key: str) -> str:
-    """Terima private key dalam bentuk:
-    - hex (langsung)
-    - PEM (berheader) PKCS8
-    - base64 body dari PEM PKCS8 (tanpa header)
-    dan kembalikan hex 32-byte (Ed25519 Raw).
+    """Accept private key in forms of:
+    - hex (direct)
+    - PEM (with header) PKCS8
+    - base64 body from PEM PKCS8 (without header)
+    and return 32-byte hex (Ed25519 Raw).
     """
     s = (priv_key or "").strip()
-    # Jika sudah hex valid
+    # If already a valid hex
     if re.fullmatch(r"[0-9a-fA-F]+", s) and len(s) % 2 == 0:
         return s.lower()
-    # Jika string mengandung header PEM
+    # If the string contains a PEM header
     if "-----BEGIN" in s:
         key = load_pem_private_key(s.encode("utf-8"), password=None)
         raw = key.private_bytes(Encoding.Raw, PrivateFormat.Raw, NoEncryption())
         return raw.hex()
-    # Coba asumsikan base64 body (DER PKCS8)
+    # Try to assume base64 body (DER PKCS8)
     try:
         der = base64.b64decode(s)
         key = load_der_private_key(der, password=None)
@@ -65,7 +65,7 @@ def _normalize_privkey_to_hex(priv_key: str) -> str:
         return raw.hex()
     except Exception:
         pass
-    raise ValueError("Unsupported private key format. Provide hex, PEM, atau base64 PKCS8 body.")
+    raise ValueError("Unsupported private key format. Provide hex, PEM, or base64 PKCS8 body.")
 
 def generate_ed25519_identity():
     sk = ed25519.Ed25519PrivateKey.generate()

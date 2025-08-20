@@ -124,3 +124,46 @@ def get_price_usd(coin_type: str, amount_in_token: float, logger=None) -> str:
     return _format_usd_dynamic(usd_value)
 
 
+
+def get_price_usd_number(coin_type: str):
+    """Return the current price in USD for one unit of the given token.
+
+    Returns Decimal or None on failure.
+    """
+    token_id, token_symbol = resolve_token_identifiers(coin_type)
+    if not token_id or not token_symbol:
+        return None
+
+    url_coingecko = f"https://api.coingecko.com/api/v3/simple/price?ids={token_id}&vs_currencies=usd"
+    url_cryptocompare = f"https://min-api.cryptocompare.com/data/price?fsym={token_symbol}&tsyms=USD"
+
+    # Try CoinGecko first
+    try:
+        resp = requests.get(url_coingecko, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+        value = data.get(token_id, {}).get("usd")
+        if value is None:
+            raise ValueError("CoinGecko returned no USD price for id")
+        price_usd = Decimal(str(value))
+        if price_usd > 0:
+            return price_usd
+    except Exception:
+        pass
+
+    # Fallback to CryptoCompare
+    try:
+        resp = requests.get(url_cryptocompare, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+        value = data.get("USD")
+        if value is None:
+            return None
+        price_usd = Decimal(str(value))
+        if price_usd > 0:
+            return price_usd
+    except Exception:
+        return None
+
+    return None
+

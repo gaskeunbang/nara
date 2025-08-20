@@ -46,6 +46,26 @@ pub(crate) fn create_derivation_path(principal: &Principal) -> Vec<Vec<u8>> {
     .collect()
 }
 
+/// Return the current Ethereum network as a friendly string inferred from RPC service.
+pub fn current_network_name() -> String {
+    let service = get_rpc_service();
+    match service {
+        RpcService::Custom(api) => {
+            let url = api.url.to_lowercase();
+            if url.contains("sepolia") {
+                "sepolia".to_string()
+            } else if url.contains("goerli") {
+                "goerli".to_string()
+            } else if url.contains("mainnet") || url.contains("eth-mainnet") {
+                "mainnet".to_string()
+            } else {
+                "custom".to_string()
+            }
+        }
+        _ => "mainnet".to_string(),
+    }
+}
+
 // Build derivation path from an arbitrary unique string sender (not a Principal)
 pub(crate) fn create_derivation_path_from_sender(sender: &str) -> Vec<Vec<u8>> {
     const SCHEMA_V1: u8 = 1;

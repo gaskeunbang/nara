@@ -58,6 +58,7 @@ service : (BitcoinNetwork, opt InitArg) -> {
   canister_send_token : (text, nat64, text) -> (text);
   canister_wallet_address : () -> (Addresses);
   canister_wallet_balance : () -> (WalletBalances);
+  coin_network : () -> (Addresses);
   ethereum_address : () -> (text);
   ethereum_balance : (text) -> (text);
   ethereum_send : (text, nat) -> (text);

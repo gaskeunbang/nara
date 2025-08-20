@@ -8,6 +8,7 @@ from ic.identity import Identity
 from ic.agent import Agent as ICAgent
 from ic.principal import Principal
 from cryptography.hazmat.primitives.serialization import load_pem_private_key, load_der_private_key, Encoding, PrivateFormat, NoEncryption
+from cryptography.hazmat.primitives.asymmetric import ed25519, ec
 
 load_dotenv()
 
@@ -34,30 +35,46 @@ def _get_candid_path(canister_name: str) -> str:
 
 
 def _normalize_privkey_to_hex(priv_key: str) -> str:
-    """Terima private key dalam bentuk:
-    - hex (langsung)
-    - PEM (berheader) PKCS8
-    - base64 body dari PEM PKCS8 (tanpa header)
-    dan kembalikan hex 32-byte (Ed25519 Raw).
+    """Accept private key in forms of:
+    - hex (direct)
+    - PEM (with header) PKCS8
+    - base64 body from PEM PKCS8 (without header)
+    and return 32-byte hex (Ed25519 Raw).
     """
     s = (priv_key or "").strip()
-    # Jika sudah hex valid
+    # If already a valid hex
     if re.fullmatch(r"[0-9a-fA-F]+", s) and len(s) % 2 == 0:
         return s.lower()
-    # Jika string mengandung header PEM
+    # If the string contains a PEM header
     if "-----BEGIN" in s:
         key = load_pem_private_key(s.encode("utf-8"), password=None)
-        raw = key.private_bytes(Encoding.Raw, PrivateFormat.Raw, NoEncryption())
-        return raw.hex()
-    # Coba asumsikan base64 body (DER PKCS8)
+        # Ed25519 private key: export raw 32 bytes
+        if isinstance(key, ed25519.Ed25519PrivateKey):
+            raw = key.private_bytes(Encoding.Raw, PrivateFormat.Raw, NoEncryption())
+            return raw.hex()
+        # EC private key (e.g., "BEGIN EC PRIVATE KEY"): derive integer d then 32-byte big-endian
+        if isinstance(key, ec.EllipticCurvePrivateKey):
+            d = key.private_numbers().private_value
+            # 32 bytes for P-256/secp256k1; pad as needed
+            raw32 = d.to_bytes(32, byteorder="big", signed=False)
+            return raw32.hex()
+        # Other key types unsupported
+        raise ValueError("Unsupported PEM key type. Provide Ed25519 or EC private key.")
+    # Try to assume base64 body (DER PKCS8)
     try:
         der = base64.b64decode(s)
         key = load_der_private_key(der, password=None)
-        raw = key.private_bytes(Encoding.Raw, PrivateFormat.Raw, NoEncryption())
-        return raw.hex()
+        if isinstance(key, ed25519.Ed25519PrivateKey):
+            raw = key.private_bytes(Encoding.Raw, PrivateFormat.Raw, NoEncryption())
+            return raw.hex()
+        if isinstance(key, ec.EllipticCurvePrivateKey):
+            d = key.private_numbers().private_value
+            raw32 = d.to_bytes(32, byteorder="big", signed=False)
+            return raw32.hex()
+        raise ValueError("Unsupported DER key type. Provide Ed25519 or EC private key.")
     except Exception:
         pass
-    raise ValueError("Unsupported private key format. Provide hex, PEM, atau base64 PKCS8 body.")
+    raise ValueError("Unsupported private key format. Provide hex, PEM, or base64 PKCS8 body.")
 
 
 def make_canister(canister_name: str, priv_key: str) -> Canister:

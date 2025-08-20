@@ -1,7 +1,7 @@
 from decimal import Decimal, getcontext
 from typing import Union
 
-# Tingkatkan presisi untuk pembagian big integer -> decimal
+# Increase precision for big integer to decimal division
 getcontext().prec = 50
 
 Numeric = Union[int, str, Decimal]
@@ -13,16 +13,16 @@ def _to_decimal(value: Numeric) -> Decimal:
     if isinstance(value, int):
         return Decimal(value)
     if isinstance(value, str):
-        # string dapat berupa integer besar atau desimal
+        # the string can be either a big integer or a decimal
         return Decimal(value)
     raise TypeError(f"Unsupported type for numeric conversion: {type(value)}")
 
 
 def _format_decimal(value: Decimal, max_fraction_digits: int) -> str:
-    # Batasi ke jumlah digit desimal maksimum yang relevan (tanpa notasi ilmiah)
+    # Limit to the maximum relevant decimal digits (avoid scientific notation)
     quant = Decimal(1).scaleb(-max_fraction_digits)  # 10^-max_fraction_digits
     q = value.quantize(quant)
-    # Hilangkan trailing zeros dan titik jika tidak perlu
+    # Remove trailing zeros and the dot if not needed
     normalized = q.normalize()
     if normalized == 0:
         return "0"
@@ -52,7 +52,7 @@ def e8s_to_icp(e8s: Numeric) -> str:
     return _format_decimal(d, 8)
 
 def to_amount(coin_symbol: str, smallest_unit_value: Numeric) -> str:
-    """Konversi nilai dari satuan terkecil ke amount manusiawi.
+    """Convert value from smallest unit to human-readable amount.
 
     - BTC: satoshi -> BTC
     - ETH: wei -> ETH
@@ -74,7 +74,7 @@ def to_amount(coin_symbol: str, smallest_unit_value: Numeric) -> str:
 
 def eth_to_wei(amount: Numeric) -> int:
     d = _to_decimal(amount) * (Decimal(10) ** 18)
-    # pastikan integer (trunc toward zero)
+    # ensure integer (trunc toward zero)
     return int(d.to_integral_value(rounding=getcontext().rounding))
 
 
@@ -93,7 +93,7 @@ def icp_to_e8s(amount: Numeric) -> int:
     return int(d.to_integral_value(rounding=getcontext().rounding))
 
 def to_smallest(coin_symbol: str, amount: Numeric) -> int:
-    """Konversi amount manusiawi ke satuan terkecil (integer).
+    """Convert human-readable amount to smallest unit (integer).
 
     - BTC: BTC -> satoshi
     - ETH: ETH -> wei

@@ -257,4 +257,21 @@ tools = [
             "strict": True
         }
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "buy_crypto",
+            "description": "Buy crypto using fiat. Provide coin type and token amount, and you will receive a payment link.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "coinType": {"type": "string", "description": "One of: btc, eth, sol, icp"},
+                    "amount": {"type": "number", "description": "Token amount the user wants to buy (e.g., 0.2 BTC)."}
+                },
+                "required": ["coinType", "amount"],
+                "additionalProperties": False
+            }
+        },
+        "strict": True
+    },
 ]

@@ -7,3 +7,8 @@ ASI1_HEADERS = {
     "Authorization": f"Bearer {ASI1_API_KEY}",
     "Content-Type": "application/json"
 }
+
+# Stripe API settings
+STRIPE_API_URL = "https://api.stripe.com/v1"
+STRIPE_API_KEY = os.getenv("STRIPE_API_KEY")
+STRIPE_WEBHOOK_URL = os.getenv("WEBHOOK_URL")

@@ -1,4 +1,9 @@
-type Addresses = record { solana : text; ethereum : text; bitcoin : text };
+type Addresses = record {
+  icp : text;
+  solana : text;
+  ethereum : text;
+  bitcoin : text;
+};
 type BitcoinNetwork = variant { mainnet; regtest; testnet };
 type CommitmentLevel = variant { finalized; confirmed; processed };
 type Ed25519KeyName = variant {
@@ -20,6 +25,7 @@ type InitArg = record {
   sol_rpc_canister_id : opt principal;
 };
 type Outpoint = record { txid : blob; vout : nat32 };
+type Result = variant { Ok : nat64; Err : text };
 type RpcEndpoint = record { url : text; headers : opt vec HttpHeader };
 type SendRequest = record {
   destination_address : text;
@@ -27,6 +33,12 @@ type SendRequest = record {
 };
 type SolanaNetwork = variant { Mainnet; Custom : RpcEndpoint; Devnet };
 type Utxo = record { height : nat32; value : nat64; outpoint : Outpoint };
+type WalletBalances = record {
+  icp : nat64;
+  solana : nat;
+  ethereum : text;
+  bitcoin : nat64;
+};
 service : (BitcoinNetwork, opt InitArg) -> {
   // Returns a legacy P2PKH (Pay-to-PubKey-Hash) address for this smart contract.
   // 
@@ -43,10 +55,16 @@ service : (BitcoinNetwork, opt InitArg) -> {
   bitcoin_send : (SendRequest) -> (text);
   // Returns the UTXOs of the given Bitcoin address.
   bitcoin_utxos : (text) -> (GetUtxosResponse);
+  canister_send_token : (text, nat64, text) -> (text);
+  canister_wallet_address : () -> (Addresses);
+  canister_wallet_balance : () -> (WalletBalances);
   ethereum_address : () -> (text);
   ethereum_balance : (text) -> (text);
   ethereum_send : (text, nat) -> (text);
   get_addresses : (text) -> (Addresses);
+  icp_canister_address : () -> (text);
+  icp_canister_balance : () -> (nat64);
+  icp_send : (text, nat64) -> (Result);
   solana_address : () -> (text);
   solana_balance : (text) -> (nat);
   solana_send : (text, nat) -> (text);

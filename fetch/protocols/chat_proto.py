@@ -28,6 +28,25 @@ from config.settings import ASI1_BASE_URL, ASI1_HEADERS
 async def get_crypto_price(ctx: Context, coin_type: str, amount_in_token: float):
     return get_price_usd(coin_type, amount_in_token, logger=ctx.logger)
 
+def _get_pending_transfer_for_sender(ctx: Context) -> dict | None:
+    try:
+        pending_transfers = ctx.storage.get("pending_transfers") or {}
+        return pending_transfers.get(getattr(ctx, "sender", None))
+    except Exception:
+        return None
+
+def _set_pending_transfer_for_sender(ctx: Context, pending: dict) -> None:
+    pending_transfers = ctx.storage.get("pending_transfers") or {}
+    pending_transfers[getattr(ctx, "sender", None)] = pending
+    ctx.storage.set("pending_transfers", pending_transfers)
+
+def _clear_pending_transfer_for_sender(ctx: Context) -> None:
+    pending_transfers = ctx.storage.get("pending_transfers") or {}
+    sender_key = getattr(ctx, "sender", None)
+    if sender_key in pending_transfers:
+        del pending_transfers[sender_key]
+        ctx.storage.set("pending_transfers", pending_transfers)
+
 async def call_endpoint(ctx: Context, func_name: str, args: dict):
     # Create canister
     ctx.logger.info(f"Private key: {get_private_key_for_sender(ctx)}")
@@ -121,6 +140,23 @@ async def call_endpoint(ctx: Context, func_name: str, args: dict):
 
 async def process_query(query: str, ctx: Context) -> str:
     try:
+        # Short-circuit: handle pending transfer confirmation flow first
+        pending = _get_pending_transfer_for_sender(ctx)
+        if pending:
+            user_answer = (query or "").strip().lower()
+            if user_answer == "yes":
+                try:
+                    result = await call_endpoint(ctx, pending["func_name"], pending["args"])
+                    _clear_pending_transfer_for_sender(ctx)
+                    # Return raw result only (no manual success text)
+                    return json.dumps(result)
+                except Exception as e:
+                    _clear_pending_transfer_for_sender(ctx)
+                    return f"Transfer failed: {str(e)}"
+            else:
+                _clear_pending_transfer_for_sender(ctx)
+                # Do not return a cancellation message; continue normal processing
+
         # Step 1: Initial call to ASI1 with user query and tool
         user_message = {
             "role": "user",
@@ -150,12 +186,40 @@ async def process_query(query: str, ctx: Context) -> str:
         if not tool_calls:
             return welcome_message
 
-        # Step 3: Execute tools and format results
+        # Step 3: Intercept transfer tools for confirmation; otherwise execute tools
         for tool_call in tool_calls:
             func_name = tool_call["function"]["name"]
             arguments = json.loads(tool_call["function"]["arguments"])
             tool_call_id = tool_call["id"]
 
+            is_send = func_name in {"send_solana", "send_ethereum", "send_bitcoin", "send_icp"}
+            if is_send:
+                # Save pending transfer and ask for confirmation
+                _set_pending_transfer_for_sender(ctx, {"func_name": func_name, "args": arguments})
+
+                network_map = {
+                    "send_bitcoin": ("Bitcoin", "BTC"),
+                    "send_ethereum": ("Ethereum", "ETH"),
+                    "send_solana": ("Solana", "SOL"),
+                    "send_icp": ("ICP", "ICP"),
+                }
+                network_name, symbol = network_map.get(func_name, ("Unknown", ""))
+                destination = arguments.get("destinationAddress", "-")
+                amount_display = arguments.get("amount", "-")
+
+                confirmation_text = (
+                    "Please confirm your transfer request.\n\n"
+                    "Do you want to proceed sending to this address? Estimated confirmation is 3 blocks and the fee is static. "
+                    "Type 'yes' to proceed, or type anything else to cancel.\n\n"
+                    f"- Network: {network_name}\n"
+                    f"- Destination: {destination}\n"
+                    f"- Amount: {amount_display} {symbol}\n"
+                    "- Estimated confirmations: 3 blocks (static)\n"
+                    "- Estimated fee: 0.0001 (static)\n"
+                )
+                return confirmation_text
+
+            # Non-transfer tool: execute immediately
             try:
                 result = await call_endpoint(ctx, func_name, arguments)
                 content_to_send = json.dumps(result)

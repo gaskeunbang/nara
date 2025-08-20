@@ -10,6 +10,10 @@ fetch/.env
 fetch/__pycache__/
 fetch/fetch.log
 fetch/*_data.json
+fetch/config/__pycache__
+fetch/protocols/__pycache__
+fetch/messages/__pycache__
+fetch/utils/__pycache__
 
 # Mac OSX temporary files
 .DS_Store

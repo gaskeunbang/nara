@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* Import Inter Tight */
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap');
+
+/* Tailwind v4 theme override: set Inter Tight as default sans */
+@theme {
+    --font-sans: "Inter Tight", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji",
+        "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+}

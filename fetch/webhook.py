@@ -5,12 +5,8 @@ import logging
 import traceback
 from flask import Flask, request, jsonify
 
-from utils.stripe import verify_webhook_signature, extract_checkout_metadata
-from utils.canister import make_canister
-from utils.candid import unwrap_candid
-from utils.coin import to_smallest
-from utils.pricing import get_price_usd_number
-from config.settings import STRIPE_API_KEY
+from utils import verify_webhook_signature, extract_checkout_metadata, make_canister, unwrap_candid, to_smallest, get_price_usd_number
+from config import STRIPE_API_KEY
 
 
 app = Flask(__name__)

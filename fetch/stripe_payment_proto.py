@@ -4,15 +4,9 @@ from decimal import Decimal
 
 from uagents import Protocol, Context
 
-from messages.create_payment_message import CreatePaymentMessage, CreatePaymentResponse
-from config.settings import STRIPE_API_URL, STRIPE_API_KEY, STRIPE_WEBHOOK_URL
-from utils.canister import make_canister
-from utils.coin import to_amount, to_smallest
-from utils.pricing import get_price_usd, get_price_usd_number
-from utils.identity import generate_ed25519_identity
-from utils.candid import unwrap_candid
-from utils.context import get_private_key_for_sender, get_principal_for_sender
-from utils.stripe import create_checkout_session
+from messages import CreatePaymentMessage, CreatePaymentResponse
+from config import STRIPE_API_URL, STRIPE_API_KEY, STRIPE_WEBHOOK_URL
+from utils import make_canister, to_amount, to_smallest, get_price_usd, get_price_usd_number, generate_ed25519_identity, unwrap_candid, get_private_key_for_sender, get_principal_for_sender, create_checkout_session
 
 stripe_payment_proto = Protocol(name="Stripe Payment Protocol")
 

@@ -1,11 +1,11 @@
 from uagents import Agent
 
 # Protocols
-from protocols.health_proto import create_health_protocol
-from protocols.chat_proto import chat_proto
-from protocols.stripe_payment_proto import stripe_payment_proto
+from health_proto import create_health_protocol
+from chat_proto import chat_proto
+from stripe_payment_proto import stripe_payment_proto
 # Settings
-from config.settings import ASI1_BASE_URL, ASI1_HEADERS
+from config import ASI1_BASE_URL, ASI1_HEADERS
 
 # Setup agent
 AGENT_NAME = 'Nara Wallet Agent'

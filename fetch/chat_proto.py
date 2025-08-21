@@ -13,18 +13,10 @@ from uagents_core.contrib.protocols.chat import (
 from uagents import Context, Protocol
 
 # Utils
-from utils.canister import make_canister
-from utils.coin import to_amount, to_smallest
-from utils.pricing import get_price_usd, get_price_usd_number
-from utils.identity import generate_ed25519_identity
-from utils.candid import unwrap_candid
-from utils.context import get_private_key_for_sender, get_principal_for_sender
-from utils.stripe import create_checkout_session
+from utils import make_canister, to_amount, to_smallest, get_price_usd, get_price_usd_number, generate_ed25519_identity, unwrap_candid, get_private_key_for_sender, get_principal_for_sender, create_checkout_session
 
 # Config
-from config.messages import help_message, welcome_message
-from config.tools import tools
-from config.settings import ASI1_BASE_URL, ASI1_HEADERS
+from config import help_message, welcome_message, tools, ASI1_BASE_URL, ASI1_HEADERS
 
 async def get_crypto_price(ctx: Context, coin_type: str, amount_in_token: float):
     return get_price_usd(coin_type, amount_in_token, logger=ctx.logger)

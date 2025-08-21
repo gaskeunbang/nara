@@ -17,7 +17,18 @@
         }
       ],
       "build": ["bash src/wallet/build.sh", "candid-extractor target/wasm32-unknown-unknown/release/wallet.wasm > src/wallet/wallet.did"],
-      "init_arg": "(variant { regtest }, opt record { solana_network = opt variant { Custom = record { url = \"https://api.devnet.solana.com\"; headers = null } }; ed25519_key_name = opt variant { LocalDevelopment }; sol_rpc_canister_id = opt principal \"tghme-zyaaa-aaaar-qarca-cai\"; solana_commitment_level = null })"
+      "init_arg": "(variant { testnet }, opt record { solana_network = opt variant { Custom = record { url = \"https://api.devnet.solana.com\"; headers = null } }; ed25519_key_name = opt variant { LocalDevelopment }; sol_rpc_canister_id = opt principal \"tghme-zyaaa-aaaar-qarca-cai\"; solana_commitment_level = null })"
+    },
+    "icp_ledger": {
+      "type": "custom",
+      "candid": "https://raw.githubusercontent.com/dfinity/ic/047925dfd8386aca91d154054149727131766084/rs/ledger_suite/icp/ledger.did",
+      "wasm": "https://download.dfinity.systems/ic/047925dfd8386aca91d154054149727131766084/canisters/ledger-canister.wasm.gz",
+      "remote": {
+        "id": {
+          "ic": "ryjl3-tyaaa-aaaaa-aaaba-cai"
+        }
+      },
+      "specified_id": "ryjl3-tyaaa-aaaaa-aaaba-cai"
     },
     "sol_rpc": {
       "specified_id": "tghme-zyaaa-aaaar-qarca-cai",
@@ -55,17 +66,6 @@
       "source": ["src/frontend/dist"],
       "type": "assets",
       "workspace": "nara_frontend"
-    },
-    "icp_ledger": {
-      "type": "custom",
-      "candid": "https://raw.githubusercontent.com/dfinity/ic/047925dfd8386aca91d154054149727131766084/rs/ledger_suite/icp/ledger.did",
-      "wasm": "https://download.dfinity.systems/ic/047925dfd8386aca91d154054149727131766084/canisters/ledger-canister.wasm.gz",
-      "remote": {
-        "id": {
-          "ic": "ryjl3-tyaaa-aaaaa-aaaba-cai"
-        }
-      },
-      "specified_id": "ryjl3-tyaaa-aaaaa-aaaba-cai"
     }
   },
   "defaults": {

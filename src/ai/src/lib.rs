@@ -566,7 +566,7 @@ fn get_exchange_symbol(exchange: &str, symbol: &str) -> Option<String> {
 fn build_market_data_url(exchange: &str, symbol: &str) -> Result<String, ApiError> {
     ic_cdk::println!("Building URL for exchange: {}, symbol: {}", exchange, symbol);
     
-    let scraper_api_key = "api menyala abangku";
+    let scraper_api_key = "be1a76bb69952c9960a5f52514b17bdc";
 
     // Get the correct symbol format for this exchange
     let exchange_symbol = get_exchange_symbol(exchange, symbol)

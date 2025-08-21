@@ -9,6 +9,9 @@ function App() {
   const bg2 = `${basePath}assets/background-2.png`;
   const ornament = `${basePath}assets/ornamen-bg.png`;
   const imageWrapper = `${basePath}assets/image-wrapper.png`;
+  const glowEffect = `${basePath}assets/glow-effect.png`;
+  const macbook = `${basePath}assets/macbook.png`;
+  const substract = `${basePath}assets/substract2.png`;
   const featureCards = [
     {
       title: 'Crypto Transfers',
@@ -181,6 +184,8 @@ function App() {
         </section>
 
 
+
+
         {/* Section 2: Features wrapper */}
         <section id="features" className="relative pb-8">
 
@@ -238,6 +243,49 @@ function App() {
                   ))}
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 3 (minimal): Glow background + Macbook content */}
+        <section id="cta" className="relative overflow-hidden w-screen left-1/2 -translate-x-1/2 bg-[#ffffff]">
+          {/* Glow as background */}
+          <img
+            src={glowEffect}
+            alt="glow"
+            className="pointer-events-none select-none absolute inset-0 w-full h-full object-cover opacity-80"
+          />
+
+          {/* Content */}
+          <div className="relative z-10 mx-auto">
+            <div className="text-center">
+              <h2 className="text-[28px] sm:text-[40px] font-normal tracking-tight text-slate-900">
+                Ready to use crypto without the complexity?
+              </h2>
+              <p className="mt-2 text-slate-600 text-[14px] sm:text-[15px]">
+                Try Agentbot and complete your first transaction in minutes!
+              </p>
+              <div className="mt-8 mb-10">
+                <Button>
+                  <span className="inline-flex items-center gap-2">
+                    <img src="/assets/icon-logo.png" alt="icon" className="h-4 w-4" />
+                    Try it free
+                  </span>
+                </Button>
+              </div>
+            </div>
+            <div className="relative mt-2">
+              {/* Substract sits above glow but below macbook; pinned to bottom to extend page height */}
+              <img
+                src={substract}
+                alt="panel background"
+                className="pointer-events-none select-none absolute bottom-0 left-1/2 -translate-x-1/2 h-auto z-0"
+              />
+              <img
+                src={macbook}
+                alt="macbook"
+                className="relative z-10 mx-auto max-w-full w-[760px] drop-shadow-[0_20px_50px_rgba(0,0,0,0.35)]"
+              />
             </div>
           </div>
         </section>

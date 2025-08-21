@@ -1,5 +1,6 @@
 import React from 'react';
 import Navbar from './components/layout/Navbar';
+import Footer from './components/layout/Footer';
 import Container from './components/ui/Container';
 import Button from './components/ui/Button';
 
@@ -289,6 +290,7 @@ function App() {
             </div>
           </div>
         </section>
+        <Footer />
       </main>
     </div>
   );

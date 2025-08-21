@@ -9,6 +9,48 @@ function App() {
   const bg2 = `${basePath}assets/background-2.png`;
   const ornament = `${basePath}assets/ornamen-bg.png`;
   const imageWrapper = `${basePath}assets/image-wrapper.png`;
+  const featureCards = [
+    {
+      title: 'Crypto Transfers',
+      description:
+        'Send BTC, ETH, and SOL with fee preview, ETA, network validation, QR support, and real-time tracking.',
+    },
+    {
+      title: 'Receive Address',
+      description:
+        'Instantly surface your address and QR with clear “correct network only” reminders and memo/tag hints when needed.',
+    },
+    {
+      title: 'Create Wallet Addresses',
+      description:
+        'Generate new addresses for BTC, ETH, and SOL. Labeled and ready to receive or send without technical friction',
+    },
+    {
+      title: 'Real-time Balances',
+      description:
+        'See time-stamped balances for each asset in a single, easy snapshot—no app-hopping.',
+    },
+    {
+      title: 'Buy with Fiat',
+      description:
+        'Purchase crypto without leaving chat. Every cost is shown upfront; coins are delivered to your address on success.',
+    },
+    {
+      title: 'Crypto → Fiat Conversion',
+      description:
+        'Get live BTC/ETH/SOL rates to USD/IDR (and more) so you always know what your holdings are worth.',
+    },
+    {
+      title: 'Market Price Comparison',
+      description:
+        'Compare CoinGecko, CoinMarketCap, and Coinbase. View deltas and the most competitive price at a glance.',
+    },
+    {
+      title: 'Price Recommendation',
+      description:
+        'Let the AI suggest the cheapest/trusted market for your purchase, with a short rationale and confidence indicator.',
+    },
+  ];
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
@@ -142,17 +184,17 @@ function App() {
         {/* Section 2: Features wrapper */}
         <section id="features" className="relative pb-8">
 
-          <div className="relative z-10">
-            <div className="relative max-w-[1380px] mx-auto overflow-hidden rounded-[20px] md:rounded-[24px] bg-[#111111] ring-1 ring-white/10 shadow-[0_24px_64px_rgba(2,6,23,0.35)]">
+          <div className="relative z-30">
+            <div className="relative z-30 max-w-[1380px] mx-auto overflow-hidden rounded-[20px] md:rounded-[24px] bg-[#111111] ring-1 ring-white/10 shadow-[0_24px_64px_rgba(2,6,23,0.35)]">
               {/* soft top glow */}
               {/* <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(900px_220px_at_50%_-60px,rgba(255,255,255,0.08),transparent)]" /> */}
               <img
                 src={ornament}
                 alt="ornament"
-                className="pointer-events-none select-none absolute  -top-16 sm:-top-20  opacity-60"
+                className="pointer-events-none select-none absolute -top-16 sm:-top-20 opacity-60 z-0"
               />
               {/* Top content */}
-              <div className="relative p-6 sm:p-8 lg:p-12">
+              <div className="relative z-30 p-6 sm:p-8 lg:p-12">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-16 items-start">
                   <div className="md:col-span-7">
                     <h2 className="text-white font-normal tracking-tight leading-tight text-[56px] sm:text-6xl lg:text-[56px]">
@@ -174,20 +216,23 @@ function App() {
               </div>
 
               {/* Grid cards */}
-              <div className="px-6 pb-10 sm:px-8 lg:px-12">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-7">
-                  {Array.from({ length: 8 }).map((_, idx) => (
+              <div className="relative z-30 px-6 pb-12 sm:px-8 lg:px-12">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(299px,1fr))] justify-center gap-6 lg:gap-7">
+                  {featureCards.map((card, idx) => (
                     <div
                       key={idx}
-                      className="rounded-2xl bg-[#151515] ring-1 ring-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)] overflow-hidden"
+                      className="relative z-30 rounded-[10px] bg-[#151515] ring-1 ring-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)] overflow-hidden w-[299px] h-[300px] flex flex-col"
                     >
-                      <div className="p-4">
+                      <div className="">
                         <img
                           src={imageWrapper}
-                          alt="feature placeholder"
-                          className="w-full rounded-xl object-cover pointer-events-none select-none"
-                          style={{ aspectRatio: '16/11' }}
+                          alt="feature visual"
+                          className="w-full h-[150px] rounded-[8px] object-cover pointer-events-none select-none"
                         />
+                      </div>
+                      <div className="px-4 pb-3 mt-4">
+                        <h3 className="text-white text-[24px] leading-snug font-normal">{card.title}</h3>
+                        <p className="mt-3 text-[14px] font-normal leading-relaxed text-white/70">{card.description}</p>
                       </div>
                     </div>
                   ))}

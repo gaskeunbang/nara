@@ -122,7 +122,7 @@ function App() {
                     fair pricing, and security from day one.
                   </p>
                   <div className="mt-16">
-                    <Button size="lg" leftIcon={<img src="/assets/icon-logo.png" className="h-4 w-4" alt="" />}>Get Started</Button>
+                    <Button size="lg" leftIcon={<img src="/assets/icon-logo.png" className="h-6 w-6" alt="" />}>Get Started</Button>
                   </div>
                 </div>
                 {/* Phone image */}
@@ -269,7 +269,7 @@ function App() {
               <div className="mt-8 mb-10">
                 <Button>
                   <span className="inline-flex items-center gap-2">
-                    <img src="/assets/icon-logo.png" alt="icon" className="h-4 w-4" />
+                    <img src="/assets/icon-logo.png" alt="icon" className="h-6 w-6" />
                     Try it free
                   </span>
                 </Button>

@@ -36,7 +36,7 @@ export default function Navbar() {
                 <div className="hidden md:block">
                     <Button>
                         <span className="inline-flex items-center gap-2">
-                            <img src="/assets/icon-logo.png" alt="icon" className="h-4 w-4" />
+                            <img src="/assets/icon-logo.png" alt="icon" className="h-6 w-6" />
                             Try it free
                         </span>
                     </Button>

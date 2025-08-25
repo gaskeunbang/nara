@@ -39,9 +39,6 @@ Our solution introduces an AI-powered conversational wallet agent built on Fetch
 - **Crypto to Fiat Conversion**
   Get instant exchange rates from crypto to fiat currencies such as USD and IDR, helping users understand the real value of their holdings.
 
-- **Cross Market Price Comparison (AI)**
-  Compare coin prices across multiple sources including CoinGecko, CoinMarketCap, and Coinbase. The system highlights the most competitive option in real time.
-
 - **AI Based Best Price Recommendation**
   AI recommends the most favorable market for buying or selling coins based on live price comparison data.
 

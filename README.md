@@ -1,23 +1,13 @@
-# 🌟 Nara Wallet
+# Nara Wallet - AI First Wallet for Everyone
 
 ![tag:innovationlab](https://img.shields.io/badge/innovationlab-3D8BD3)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![ICP](https://img.shields.io/badge/Internet_Computer-Protocol-blue.svg)](https://internetcomputer.org/)
 [![Fetch.ai](https://img.shields.io/badge/Fetch.ai-uAgents-green.svg)](https://fetch.ai/)
 
-<br />
-<div align="center">
-  <a href="https://github.com/gaskeunbang/nara">
-    <img src="docs/images/cover.png" alt="Nara Cover">
-  </a>
+Nara Wallet is an AI powered conversational wallet agent built to simplify crypto adoption and make digital asset management accessible to everyone. It is designed to work seamlessly across multiple blockchain networks including Bitcoin, Ethereum, Solana, Internet Computer, and others. Nara Wallet allows users to create wallets, send and receive funds, check balances, buy crypto with fiat, and compare market prices in real time, all through natural language interaction without the need to understand technical blockchain commands. The platform integrates a smart assistant interface where users can simply type everyday instructions such as "I want to buy Bitcoin" or "Show me my balance" and instantly get actionable results. Built on top of the Fetch.ai agent framework, Nara Wallet leverages autonomous AI agents to process requests intelligently and deliver secure, real time interaction
 
-  <h3 align="left">Nara Wallet: AI First Wallet for Everyone</h3>
-<p align="left">
-  Nara Wallet is an AI powered conversational wallet agent built to simplify crypto adoption and make digital asset management accessible to everyone. It is designed to work seamlessly across multiple blockchain networks including Bitcoin, Ethereum, Solana, Internet Computer, and others. Nara Wallet allows users to create wallets, send and receive funds, check balances, buy crypto with fiat, and compare market prices in real time, all through natural language interaction without the need to understand technical blockchain commands. The platform integrates a smart assistant interface where users can simply type everyday instructions such as "I want to buy Bitcoin" or "Show me my balance" and instantly get actionable results. Built on top of the Fetch.ai agent framework, Nara Wallet leverages autonomous AI agents to process requests intelligently and deliver secure, real time interaction
-
-</p>
-
-</div>
+🌟 **Built for NextGen Agents Hackathon 2025** - [View on DoraHacks](https://dorahacks.io/buidl/31746/)
 
 ## 🎯 Why Nara?
 
@@ -31,36 +21,29 @@ Our solution introduces an AI-powered conversational wallet agent built on Fetch
 
 ## 🏆 Features of Nara
 
-### Crypto Asset Transfer
+- **Crypto Asset Transfer**
+  Send coins such as BTC, ETH, SOL, and SOL to other wallet addresses with simple chat instructions. Includes network and address validation to minimize errors.
 
-Send coins such as BTC, ETH, SOL, and SOL to other wallet addresses with simple chat instructions. Includes network and address validation to minimize errors.
+- **Wallet Address Creation**
+  The AI Agent automatically generates new wallet addresses for multiple crypto assets, ready to be used for sending and receiving.
 
-### Wallet Address Creation
+- **Receive Crypto Assets**
+  Easily request and display your wallet address so others can send you assets. Copy and share in just one click.
 
-The AI Agent automatically generates new wallet addresses for multiple crypto assets, ready to be used for sending and receiving.
+- **Check Wallet Balance**
+  View real time balances for each asset along with basic activity history to keep track of your funds.
 
-### Receive Crypto Assets
+- **Buy Crypto (Stripe Payment)**
+  Purchase coins directly through integrated payment providers without leaving the conversation. Balance updates are handled automatically after confirmation.
 
-Easily request and display your wallet address so others can send you assets. Copy and share in just one click.
+- **Crypto to Fiat Conversion**
+  Get instant exchange rates from crypto to fiat currencies such as USD and IDR, helping users understand the real value of their holdings.
 
-### Check Wallet Balance
+- **Cross Market Price Comparison (AI)**
+  Compare coin prices across multiple sources including CoinGecko, CoinMarketCap, and Coinbase. The system highlights the most competitive option in real time.
 
-View real time balances for each asset along with basic activity history to keep track of your funds.
-
-### Buy Crypto with Fiat Payment
-
-Purchase coins directly through integrated payment providers without leaving the conversation. Balance updates are handled automatically after confirmation.
-
-### Crypto to Fiat Conversion
-
-Get instant exchange rates from crypto to fiat currencies such as USD and IDR, helping users understand the real value of their holdings.
-
-### Cross Market Price Comparison (AI)
-
-Compare coin prices across multiple sources including CoinGecko, CoinMarketCap, and Coinbase. The system highlights the most competitive option in real time.
-
-AI Based Best Price Recommendation
-AI recommends the most favorable market for buying or selling coins based on live price comparison data.
+- **AI Based Best Price Recommendation**
+  AI recommends the most favorable market for buying or selling coins based on live price comparison data.
 
 ## 🚀 Build and Deployment Instructions
 
@@ -145,7 +128,31 @@ INFO: [Nara Wallet Agent]: Agent inspector available at https://agentverse.ai/in
   ```
 - Using Ngrok or any Tunneling Software, Create secure https endpoint and set it up as a webhook in Stripe dashboard under the webhook section.
 
-## 🏗️ System Diagrams
+### 🧪 Testing Your Installation
+
+```bash
+# Test AI agents health (use 0.0.0.0 for testing)
+curl http://0.0.0.0:8001/health  # Agent
+
+# Test canister
+dfx canister call wallet coin_network '()'
+dfx canister call ai health_check '()'
+```
+
+## 🎨 Example Query
+
+Here are sample chat commands you can send to the Nara Wallet Agent:
+
+| **Name**                               | **Chat Query**                                               |
+| -------------------------------------- | ------------------------------------------------------------ |
+| Check / Generate User Wallet Addresses | Check all my coin address                                    |
+| Check balance                          | Check my current Solana balance                              |
+| Transfer                               | I want to send 0.1 ICP coin to this address: issvv-4a....    |
+| Buy Crypto (Stripe Payment)            | I want to buy 0.003 Bitcoin                                  |
+| Check coin price on market             | How much is 1 Ethereum in USD right now?                     |
+| AI Market Analyzer                     | I want to check the best market price to sell 1 BTC for USDT |
+
+## 🏗️ Architecture
 
 Below is the Nara Wallet sequence diagram illustrating the flow for the Buy Crypto with Fiat feature, integrated with Stripe payment and webhook.
 
@@ -165,9 +172,45 @@ Below is the Nara Wallet sequence diagram illustrating the flow for the Buy Cryp
 | ------------------------------- | --------------------------------- |
 | ![Image 1](docs/images/buy.png) | ![Image 2](docs/images/check.png) |
 
-| AI Analyzeer for Crypto Market      |
+| AI Analyzer for Crypto Market       |
 | ----------------------------------- |
 | ![Image 1](docs/images/analyze.png) |
+
+## 🔮 Future Plan: The AI Gateway to Web3
+
+Nara Wallet’s vision goes beyond simplifying crypto transactions. Our goal is to become the AI-first entry point for mainstream Web3 adoption, enabling anyone to access, manage, and grow their digital assets with confidence. By combining conversational AI with cross-chain infrastructure, Nara Wallet will expand from basic wallet functions into a comprehensive ecosystem of payments, trading, and intelligent financial guidance.
+
+Just as we simplify wallet creation and transactions today, in the future Nara will bring the same AI-powered simplicity to DeFi, NFTs, and cross-chain services—bridging the gap between complex blockchain systems and everyday users.
+
+### 📅 Phase 1 (Q4 2025) – Production Launch
+
+- **🌍 ICP Mainnet Deployment:** Core wallet features live (create, transfer, receive, balances)
+
+- **🤖 Fetch.ai Agent Integration:** Conversational agent for natural language commands
+
+- **💳 Fiat On-Ramp:** Stripe webhook integration for crypto purchases
+
+- **📊 Basic Price Comparison:** Multi-market feed (CoinGecko, CoinMarketCap, Coinbase)
+
+### 📅 Phase 2 (2026) – Enhanced Intelligence
+
+- **⚡ Agent-to-Agent Collaboration:** Market insights via Fetch.ai agent network
+
+- **📈 Portfolio Tracking:** AI-generated balance summaries and transaction insights
+
+- **🔐 Security Features:** Risk alerts for suspicious addresses and transaction checks
+
+- **🌏 Multi-language Support:** English and Indonesian adoption
+
+### 📅 Phase 3 (2027) – Ecosystem Growth
+
+- **⛓️ Cross-Canister Interoperability:** Support for ICP DeFi canisters and ICRC-1/ICRC-2 tokens
+
+- **🛒 AI Agent Marketplace:** Interact with other agents (conversion, analytics, payments)
+
+- **🏛️ Community Feedback Loop:** Continuous improvement with user training data
+
+- **🔬 Open Contribution:** Open-sourced modules for ICP + Fetch.ai integration
 
 ## 📃 License
 

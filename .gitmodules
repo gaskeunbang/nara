@@ -1,0 +1,3 @@
+[submodule "slippage-prediction-engine"]
+	path = slippage-prediction-engine
+	url = https://github.com/gitarRacing/slippage-prediction-engine

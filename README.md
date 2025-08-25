@@ -45,7 +45,7 @@ Our solution introduces an AI-powered conversational wallet agent built on Fetch
 - **AI Based Best Price Recommendation**
   AI recommends the most favorable market for buying or selling coins based on live price comparison data.
 
-### 🤖 How Our AI Works (White-Box View):
+### 🤖 How the Market Price AI Works (White-Box View):
 
 - **Real-Time Data Ingestion**: Constantly pulls live order book data and recent trade history from major exchanges (Binance, Kraken, Coinbase, etc.).
 - **Advanced Feature Engineering**: Extracts 30+ market microstructure features, including:

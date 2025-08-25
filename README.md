@@ -159,9 +159,9 @@ INFO: [Nara Wallet Agent]: Agent inspector available at https://agentverse.ai/in
 | ------------------------------- | --------------------------------- |
 | ![Image 1](docs/images/buy.png) | ![Image 2](docs/images/check.png) |
 
-| AI Analyzeer for Crypto Market     |
-| ---------------------------------- |
-| ![Image 1](docs/images/analze.png) |
+| AI Analyzeer for Crypto Market      |
+| ----------------------------------- |
+| ![Image 1](docs/images/analyze.png) |
 
 ## 🏗️ System Diagrams
 

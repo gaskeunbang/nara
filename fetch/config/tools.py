@@ -274,4 +274,23 @@ tools = [
         },
         "strict": True
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "best_market_price",
+            "description": "Gets the best market price for a given coin type.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "coin_from": {"type": "string", "description": "Example: BTC, ETH, SOL, ICP."},
+                    "coin_to": {"type": "string", "description": "Example: USDT, USDC, USDC.e, USDC.e."},
+                    "side": {"type": "string", "description": "The side of the trade (buy or sell)."},
+                    "amount": {"type": "number", "description": "Token amount the user wants to buy (e.g., 0.2 BTC)."}
+                },
+                "required": ["coin_from", "coin_to", "side", "amount"],
+                "additionalProperties": False
+            },
+            "strict": True
+        }
+    }
 ]

@@ -20,6 +20,7 @@ from utils.identity import generate_ed25519_identity
 from utils.candid import unwrap_candid
 from utils.context import get_private_key_for_sender, get_principal_for_sender
 from utils.stripe import create_checkout_session
+from utils.text import is_greeting
 
 # Config
 from config.messages import help_message, welcome_message
@@ -82,11 +83,13 @@ def _clear_pending_transfer_for_sender(ctx: Context) -> None:
         del pending_transfers[sender_key]
         ctx.storage.set("pending_transfers", pending_transfers)
 
+
 async def call_endpoint(ctx: Context, func_name: str, args: dict):
     # Create canister
     ctx.logger.info(f"Private key: {get_private_key_for_sender(ctx)}")
     wallet_canister = make_canister("wallet", get_private_key_for_sender(ctx))
     icp_ledger_canister = make_canister("icp_ledger", get_private_key_for_sender(ctx))
+    ai_canister = make_canister("ai", get_private_key_for_sender(ctx))
 
     try:
         # Fetch coin network info once for address/balance responses
@@ -100,6 +103,62 @@ async def call_endpoint(ctx: Context, func_name: str, args: dict):
         if func_name == "help":
             result = help_message
 
+        elif func_name == "send_bitcoin":
+            destination = args["destinationAddress"]
+            amount_token = Decimal(str(args["amount"]))
+            amount_smallest = to_smallest("BTC", amount_token)
+            req = {"destination_address": destination, "amount_in_satoshi": amount_smallest}
+            txid = unwrap_candid(wallet_canister.bitcoin_send(req))
+            result = {"txid": txid}
+
+        elif func_name == "send_ethereum":
+            destination = args["destinationAddress"]
+            amount_token = Decimal(str(args["amount"]))
+            amount_smallest = to_smallest("ETH", amount_token)
+            tx_hash = unwrap_candid(wallet_canister.ethereum_send(destination, amount_smallest))
+            result = {"txid": tx_hash}
+
+        elif func_name == "send_solana":
+            destination = args["destinationAddress"]
+            amount_token = Decimal(str(args["amount"]))
+            amount_smallest = to_smallest("SOL", amount_token)
+            sig = unwrap_candid(wallet_canister.solana_send(destination, amount_smallest))
+            result = {"txid": sig}
+
+        elif func_name == "send_icp":
+            destination = args["destinationAddress"]
+            amount_token = Decimal(str(args["amount"]))
+            amount_smallest = to_smallest("ICP", amount_token)
+            send_res = unwrap_candid(wallet_canister.icp_send(destination, amount_smallest))
+            if isinstance(send_res, dict) and "Ok" in send_res:
+                result = {"block_index": send_res["Ok"]}
+            elif isinstance(send_res, dict) and "Err" in send_res:
+                raise Exception(str(send_res["Err"]))
+            else:
+                result = send_res
+
+        elif func_name == "best_market_price":
+            # Accept either explicit coin_symbol or split pair from coin_from/coin_to
+            coin_symbol = args.get("coin_symbol")
+            if not coin_symbol:
+                coin_from = str(args.get("coin_from", "")).strip().upper()
+                coin_to = str(args.get("coin_to", "")).strip().upper()
+                if coin_from and coin_to:
+                    coin_symbol = f"{coin_from}/{coin_to}"
+            side = (args.get("side") or "").lower()
+            amount = args.get("amount")
+            if not coin_symbol:
+                raise ValueError("Missing trading pair. Provide coin_from and coin_to (e.g., BTC and USDT).")
+            if side not in {"buy", "sell"}:
+                raise ValueError("Invalid side. Use 'buy' or 'sell'.")
+            if amount is None:
+                raise ValueError("Missing amount for best_market_price.")
+
+            payload = {"symbol": coin_symbol, "side": side, "amount": float(amount), "amount_usd": []}
+            ctx.logger.info(f"[best_market_price] payload: {payload}")
+            result = unwrap_candid(ai_canister.predict_trade_cost(payload))
+            ctx.logger.info(f"Result: {result}")
+
         elif func_name == "get_coin_price":
             result = await get_crypto_price(ctx, args["coin_type"], args["amount"])
             ctx.logger.info(f"Result: {result}")
@@ -108,40 +167,56 @@ async def call_endpoint(ctx: Context, func_name: str, args: dict):
             address_raw = wallet_canister.bitcoin_address()
             address = unwrap_candid(address_raw)
             raw_balance = wallet_canister.bitcoin_balance(address)  # satoshi
-            balance = unwrap_candid(raw_balance)
+            balance_smallest = unwrap_candid(raw_balance)
+            balance_readable = to_amount("BTC", balance_smallest)
+            try:
+                price_usd = await get_crypto_price(ctx, "BTC", float(balance_readable or 0))
+            except Exception:
+                price_usd = "$0.00"
             result = {
-                "balance": to_amount("BTC", balance),
-                "network": (networks.get("bitcoin") if isinstance(networks, dict) else None) or "unknown",
-                "explorer": _explorer_address_url("BTC", (networks or {}).get("bitcoin", ""), address),
+                "balance": balance_readable,
+                "price_usd": price_usd,
             }
         elif func_name == "get_ethereum_balance":
             address_raw = wallet_canister.ethereum_address()
             address = unwrap_candid(address_raw)
             raw_balance = wallet_canister.ethereum_balance(address)  # wei (string)
-            balance = unwrap_candid(raw_balance)
+            balance_smallest = unwrap_candid(raw_balance)
+            balance_readable = to_amount("ETH", balance_smallest)
+            try:
+                price_usd = await get_crypto_price(ctx, "ETH", float(balance_readable or 0))
+            except Exception:
+                price_usd = "$0.00"
             result = {
-                "balance": to_amount("ETH", balance),
-                "network": (networks.get("ethereum") if isinstance(networks, dict) else None) or "unknown",
-                "explorer": _explorer_address_url("ETH", (networks or {}).get("ethereum", ""), address),
+                "balance": balance_readable,
+                "price_usd": price_usd,
             }
         elif func_name == "get_solana_balance":
             address_raw = wallet_canister.solana_address()
             address = unwrap_candid(address_raw)
             raw_balance = wallet_canister.solana_balance(address)  # lamports (Nat)
-            balance = unwrap_candid(raw_balance)
+            balance_smallest = unwrap_candid(raw_balance)
+            balance_readable = to_amount("SOL", balance_smallest)
+            try:
+                price_usd = await get_crypto_price(ctx, "SOL", float(balance_readable or 0))
+            except Exception:
+                price_usd = "$0.00"
             result = {
-                "balance": to_amount("SOL", balance),
-                "network": (networks.get("solana") if isinstance(networks, dict) else None) or "unknown",
-                "explorer": _explorer_address_url("SOL", (networks or {}).get("solana", ""), address),
+                "balance": balance_readable,
+                "price_usd": price_usd,
             }
 
         elif func_name == "get_icp_balance":
             raw_balance = icp_ledger_canister.icrc1_balance_of({"owner": get_principal_for_sender(ctx), "subaccount": []})
             e8s_value = unwrap_candid(raw_balance)
+            balance_readable = to_amount("ICP", e8s_value)
+            try:
+                price_usd = await get_crypto_price(ctx, "ICP", float(balance_readable or 0))
+            except Exception:
+                price_usd = "$0.00"
             result = {
-                "balance": to_amount("ICP", e8s_value),
-                "network": (networks.get("icp") if isinstance(networks, dict) else None) or "unknown",
-                "explorer": _explorer_address_url("ICP", (networks or {}).get("icp", ""), get_principal_for_sender(ctx)),
+                "balance": balance_readable,
+                "price_usd": price_usd,
             }
 
         elif func_name == "get_bitcoin_address":
@@ -241,13 +316,41 @@ async def process_query(query: str, ctx: Context) -> str:
                         result = await call_endpoint(ctx, pending["func_name"], pending["args"])
 
                     _clear_pending_transfer_for_sender(ctx)
-                    return result_text if pending.get("func_name") == "buy_crypto" else json.dumps(result)
+                    if pending.get("func_name") == "buy_crypto":
+                        return result_text
+                    else:
+                        # Forward raw result JSON to ASI1 for nicer final formatting
+                        try:
+                            formatting_messages = [
+                                {"role": "system", "content": "You are a helpful assistant. Format the following blockchain transfer result JSON into a concise, user-friendly confirmation with key details like transaction id or block index."},
+                                {"role": "user", "content": f"Transfer result JSON: {json.dumps(result)}"},
+                            ]
+                            formatting_payload = {
+                                "model": "asi1-mini",
+                                "messages": formatting_messages,
+                                "temperature": 0.3,
+                                "max_tokens": 256,
+                            }
+                            formatting_response = requests.post(
+                                f"{ASI1_BASE_URL}/chat/completions",
+                                headers=ASI1_HEADERS,
+                                json=formatting_payload,
+                            )
+                            formatting_response.raise_for_status()
+                            formatting_json = formatting_response.json()
+                            return formatting_json["choices"][0]["message"]["content"]
+                        except Exception:
+                            return json.dumps(result)
                 except Exception as e:
                     _clear_pending_transfer_for_sender(ctx)
                     return f"Transfer failed: {str(e)}"
             else:
                 _clear_pending_transfer_for_sender(ctx)
                 # Do not return a cancellation message; continue normal processing
+
+        # If the user greets (in many languages/variants), return help message directly
+        if is_greeting(query or ""):
+            return help_message
 
         # Step 1: Initial call to ASI1 with user query and tool
         user_message = {
@@ -307,8 +410,8 @@ async def process_query(query: str, ctx: Context) -> str:
                     f"- Network: {network_name}\n"
                     f"- Destination: {destination}\n"
                     f"- Amount: {amount_display} {symbol}\n"
-                    "- Estimated confirmations: 3 blocks (static)\n"
-                    "- Estimated fee: 0.0001 (static)\n"
+                    "- Estimated confirmations: 3 blocks\n"
+                    "- Estimated fee: 0.0001\n"
                 )
                 return confirmation_text
             elif is_buy:

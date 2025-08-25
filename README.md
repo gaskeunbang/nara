@@ -1,61 +1,182 @@
-# `nara`
+# 🌟 Nara Wallet
 
-Welcome to your new `nara` project and to the Internet Computer development community. By default, creating a new project adds this README and some template files to your project directory. You can edit these template files to customize your project and to include your own code to speed up the development cycle.
+![tag:innovationlab](https://img.shields.io/badge/innovationlab-3D8BD3)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![ICP](https://img.shields.io/badge/Internet_Computer-Protocol-blue.svg)](https://internetcomputer.org/)
+[![Fetch.ai](https://img.shields.io/badge/Fetch.ai-uAgents-green.svg)](https://fetch.ai/)
 
-To get started, you might want to explore the project directory structure and the default configuration file. Working with this project in your development environment will not affect any production deployment or identity tokens.
+<br />
+<div align="center">
+  <a href="https://github.com/gaskeunbang/nara">
+    <img src="docs/images/cover.png" alt="Nara Cover">
+  </a>
 
-To learn more before you start working with `nara`, see the following documentation available online:
+  <h3 align="center">Nara Wallet – AI First Wallet for Everyone</h3>
+<p align="center">
+  Nara Wallet is an AI powered conversational wallet agent built to simplify crypto adoption and make digital asset management accessible to everyone. It is designed to work seamlessly across multiple blockchain networks including Bitcoin, Ethereum, Solana, Internet Computer, and others. Nara Wallet allows users to create wallets, send and receive funds, check balances, buy crypto with fiat, and compare market prices in real time, all through natural language interaction without the need to understand technical blockchain commands. The platform integrates a smart assistant interface where users can simply type everyday instructions such as "I want to buy Bitcoin" or "Show me my balance" and instantly get actionable results. Built on top of the Fetch.ai agent framework, Nara Wallet leverages autonomous AI agents to process requests intelligently and deliver secure, real time interaction
 
-- [Quick Start](https://internetcomputer.org/docs/current/developer-docs/setup/deploy-locally)
-- [SDK Developer Tools](https://internetcomputer.org/docs/current/developer-docs/setup/install)
-- [Rust Canister Development Guide](https://internetcomputer.org/docs/current/developer-docs/backend/rust/)
-- [ic-cdk](https://docs.rs/ic-cdk)
-- [ic-cdk-macros](https://docs.rs/ic-cdk-macros)
-- [Candid Introduction](https://internetcomputer.org/docs/current/developer-docs/backend/candid/)
+</p>
 
-If you want to start working on your project right away, you might want to try the following commands:
+</div>
+
+## 🎯 Why Nara?
+
+Nara Wallet addresses key challenges in crypto adoption:
+
+- Global crypto holders reached **659M** in **2024**, yet only 30–60M are active monthly users **(a16z, Crypto.com)**
+- **90%** of potential users admit they do not understand how to use crypto, and **49%** do not know how it works **(NCA, 2025)**
+- Studies show ease of use, trust, and accessibility are the main barriers to adoption **(PMC, RIF, Nature)**
+
+Our solution introduces an AI-powered conversational wallet agent built on Fetch.ai and internet computer protocol, enabling users to create wallets, transfer funds, check balances, buy crypto with fiat, and compare market prices across chains through simple natural language interaction.
+
+## 🏆 Features of Nara
+
+### Crypto Asset Transfer
+
+Send coins such as BTC, ETH, SOL, and SOL to other wallet addresses with simple chat instructions. Includes network and address validation to minimize errors.
+
+### Wallet Address Creation
+
+The AI Agent automatically generates new wallet addresses for multiple crypto assets, ready to be used for sending and receiving.
+
+### Receive Crypto Assets
+
+Easily request and display your wallet address so others can send you assets. Copy and share in just one click.
+
+### Check Wallet Balance
+
+View real time balances for each asset along with basic activity history to keep track of your funds.
+
+### Buy Crypto with Fiat Payment
+
+Purchase coins directly through integrated payment providers without leaving the conversation. Balance updates are handled automatically after confirmation.
+
+### Crypto to Fiat Conversion
+
+Get instant exchange rates from crypto to fiat currencies such as USD and IDR, helping users understand the real value of their holdings.
+
+### Cross Market Price Comparison (AI)
+
+Compare coin prices across multiple sources including CoinGecko, CoinMarketCap, and Coinbase. The system highlights the most competitive option in real time.
+
+AI Based Best Price Recommendation
+AI recommends the most favorable market for buying or selling coins based on live price comparison data.
+
+## 🚀 Build and Deployment Instructions
+
+### Prerequisites
+
+- [ ] Install the [IC SDK](https://internetcomputer.org/docs/current/developer-docs/setup/install/index.mdx)
+- [ ] On **macOS**, an `llvm` version that supports the `wasm32-unknown-unknown` target is required.
+- [ ] Install the [MOPS Package manager](https://docs.mops.one/quick-start#2-install-mops-cli)
+- [ ] Install cargo
+
+### Install Bitcoin Locally with Regtest
+
+Nara Wallet Agent includes native Bitcoin functionality. For testing and development, you can run a local Bitcoin regtest instance. Follow this guide to set up your environment: [Install bitcoin on local machine](https://internetcomputer.org/docs/build-on-btc/btc-dev-env)
+
+### Environment Setup
+
+To run the demo, create a .env file (or copy from .env.example) and add the following keys:
 
 ```bash
-cd nara/
-dfx help
-dfx canister --help
+ ASI1_API_KEY='YOUR_ASI1_API_KEY'
+ STRIPE_API_KEY='YOUR_STRIPE_KEY'
+ STRIPE_ENDPOINT_SECRET='YOUR_STRIPE_ENDPOINT_SECRET'
+ STRIPE_WEBHOOK_URL='YOUR_STRIPE_WEBHOOK_URL'
 ```
 
-## Running the project locally
+### Start ICP Local Network:
 
-If you want to test your project locally, you can use the following commands:
+- Clone repository
+  ```sh
+   git clone https://github.com/gaskeunbang/nara
+   cd nara/
+  ```
+- Start local Internet Computer replica
 
-```bash
-# Starts the replica, running in the background
-dfx start --background
+  ```sh
+   dfx start --clean --background
+  ```
 
-# Deploys your canisters to the replica and generates your candid interface
-dfx deploy
+- Deploy deploy script using Makefile
+
+  ```sh
+   make deploy
+  ```
+
+### Start AI Agents:
+
+- in seperate terminal, setup python venv
+
+  ```sh
+   cd fetch/
+   python -m venv venv
+   source venv/bin/active
+  ```
+
+- Install depedencies
+
+  ```sh
+   python -m venv venv
+   source venv/bin/active
+  ```
+
+- Runing agent
+  ```sh
+   python agent.py
+  ```
+- The agent will start and display its address and inspector URL:
+
+```
+INFO: [NaraWalletAgent]: Starting agent with address: agent1qdla8t5m3wm7tnua69jjv3p4cr4ugmzmcj95jy9vrh4209scxs02qlxwt0g
+INFO: [Nara Wallet Agent]: Agent inspector available at https://agentverse.ai/inspect/?uri=http%3A//127.0.0.1%3A8001&address=agent1qdla8t5m3wm7tnua69jjv3p4cr4ugmzmcj95jy9vrh4209scxs02qlxwt0g
 ```
 
-Once the job completes, your application will be available at `http://localhost:4943?canisterId={asset_canister_id}`.
+- Click on the Agent Inspector link to connect the agent with Agentverse via Mailbox
 
-If you have made changes to your backend canister, you can generate a new candid interface with
+### Run the stripe webhook:
 
-```bash
-npm run generate
-```
+- in seperate terminal
+  ```sh
+   cd fetch/
+   source venv/bin/active
+   python webhook.py
+  ```
+- Using Ngrok or any Tunneling Software, Create secure https endpoint and set it up as a webhook in Stripe dashboard under the webhook section.
 
-at any time. This is recommended before starting the frontend development server, and will be run automatically any time you run `dfx deploy`.
+## 📎 Demo App
 
-If you are making frontend changes, you can start a development server with
+| Nara Wallet Landing Page              | Agent Welcome Message                 |
+| ------------------------------------- | ------------------------------------- |
+| ![Image 1](assets/images/landing.png) | ![Image 2](assets/images/welcome.png) |
 
-```bash
-npm start
-```
+| Check Balance                         | Transfer                               |
+| ------------------------------------- | -------------------------------------- |
+| ![Image 1](assets/images/balance.png) | ![Image 2](assets/images/transfer.png) |
 
-Which will start a server at `http://localhost:8080`, proxying API requests to the replica at port 4943.
+| Buy Crypto                        | Check coin price                    |
+| --------------------------------- | ----------------------------------- |
+| ![Image 1](assets/images/buy.png) | ![Image 2](assets/images/check.png) |
 
-### Note on frontend environment variables
+| AI Analyzeer for Crypto Market       |
+| ------------------------------------ |
+| ![Image 1](assets/images/analze.png) |
 
-If you are hosting frontend code somewhere without using DFX, you may need to make one of the following adjustments to ensure your project does not fetch the root key in production:
+## 🏗️ System Diagrams
 
-- set`DFX_NETWORK` to `ic` if you are using Webpack
-- use your own preferred method to replace `process.env.DFX_NETWORK` in the autogenerated declarations
-  - Setting `canisters -> {asset_canister_id} -> declarations -> env_override to a string` in `dfx.json` will replace `process.env.DFX_NETWORK` with the string in the autogenerated declarations
-- Write your own `createActor` constructor
+Below is the Nara Wallet sequence diagram illustrating the flow for the Buy Crypto with Fiat feature, integrated with Stripe payment and webhook.
+
+![Nara Buy Diagram](docs/images/buy-diagram.png)
+
+## 📃 License
+
+Distributed under the MIT License. See `LICENSE.txt` for more information.
+
+## 🍀 Our Teams
+
+- Aaron Joseph Karel Daimbani (Blockchain Developer)
+- Arvin Taoran Anthaq (AI Agent Developer)
+- Tiyas Insania Dhikananda (UI/UX Designer)
+- Muhammad Fajar Mufid (Digital Business)
+- Farrel Haykal Al Giffari (Frontend Developer)

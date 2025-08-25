@@ -220,9 +220,11 @@ pub async fn icp_send(destination: String, amount_e8s: u64) -> Result<BlockIndex
 		return Err("unauthorized caller".to_string());
 	}
 
-	// Parse destination as AccountIdentifier (hex)
-	let to = AccountIdentifier::from_hex(&destination).map_err(|e| format!("invalid ICP account identifier: {}", e))?;
-	let from_subaccount = Some(Subaccount([0; 32]));
+	// Build destination AccountIdentifier from principal with default subaccount
+	let destination_principal = Principal::from_text(destination)
+		.map_err(|e| format!("invalid principal: {}", e))?;
+	let to = AccountIdentifier::new(&destination_principal, &Subaccount([0; 32]));
+	let from_subaccount = None;
 	let fee = Tokens::from_e8s(10_000); // default ICP fee 0.0001 ICP
 	let amount = Tokens::from_e8s(amount_e8s);
 	let args = TransferArgs {

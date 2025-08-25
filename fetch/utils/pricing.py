@@ -9,6 +9,19 @@ TOKENS_CONFIG = {
     "SOL": {"id": "solana", "symbol": "SOL"},
 }
 
+ALIASES = {
+    # Bitcoin
+    "BTC": "BTC",
+    "BITCOIN": "BTC",
+    # Ethereum
+    "ETH": "ETH",
+    "ETHEREUM": "ETH",
+    "ETHER": "ETH",
+    # Solana
+    "SOL": "SOL",
+    "SOLANA": "SOL",
+}
+
 
 def resolve_token_identifiers(raw_token: str) -> Tuple[Optional[str], Optional[str]]:
     """Resolve CoinGecko id and normalized symbol for a token.
@@ -20,7 +33,8 @@ def resolve_token_identifiers(raw_token: str) -> Tuple[Optional[str], Optional[s
     if not raw_token:
         return None, None
     normalized = str(raw_token).strip()
-    symbol = normalized.upper()
+    upper = normalized.upper()
+    symbol = ALIASES.get(upper, upper)
     guessed_id = normalized.lower().replace(" ", "-")
 
     mapped = TOKENS_CONFIG.get(symbol)
@@ -38,10 +52,17 @@ def resolve_token_identifiers(raw_token: str) -> Tuple[Optional[str], Optional[s
         data = resp.json()
         coins = data.get("coins", [])
         chosen = None
+        # Prefer exact symbol match (e.g., ETH) among results
         for c in coins:
             if str(c.get("symbol", "")).upper() == symbol:
                 chosen = c
                 break
+        if not chosen and coins:
+            # Otherwise prefer exact name match
+            for c in coins:
+                if str(c.get("name", "")).strip().lower() == normalized.lower():
+                    chosen = c
+                    break
         if not chosen and coins:
             chosen = coins[0]
         if chosen:
@@ -89,6 +110,8 @@ def get_price_usd(coin_type: str, amount_in_token: float, logger=None) -> str:
     url_coingecko = f"https://api.coingecko.com/api/v3/simple/price?ids={token_id}&vs_currencies=usd"
     url_cryptocompare = f"https://min-api.cryptocompare.com/data/price?fsym={token_symbol}&tsyms=USD"
 
+    logger.info(f"URL ID: {url_coingecko}")
+    logger.info(f"URL ID: {url_cryptocompare}")
     price_usd: Optional[Decimal] = None
 
     # Try CoinGecko first

@@ -147,21 +147,21 @@ INFO: [Nara Wallet Agent]: Agent inspector available at https://agentverse.ai/in
 
 ## 📎 Demo App
 
-| Nara Wallet Landing Page              | Agent Welcome Message                 |
-| ------------------------------------- | ------------------------------------- |
-| ![Image 1](assets/images/landing.png) | ![Image 2](assets/images/welcome.png) |
+| Nara Wallet Landing Page            | Agent Welcome Message               |
+| ----------------------------------- | ----------------------------------- |
+| ![Image 1](docs/images/landing.png) | ![Image 2](docs/images/welcome.png) |
 
-| Check Balance                         | Transfer                               |
-| ------------------------------------- | -------------------------------------- |
-| ![Image 1](assets/images/balance.png) | ![Image 2](assets/images/transfer.png) |
+| Check Balance                       | Transfer                             |
+| ----------------------------------- | ------------------------------------ |
+| ![Image 1](docs/images/balance.png) | ![Image 2](docs/images/transfer.png) |
 
-| Buy Crypto                        | Check coin price                    |
-| --------------------------------- | ----------------------------------- |
-| ![Image 1](assets/images/buy.png) | ![Image 2](assets/images/check.png) |
+| Buy Crypto                      | Check coin price                  |
+| ------------------------------- | --------------------------------- |
+| ![Image 1](docs/images/buy.png) | ![Image 2](docs/images/check.png) |
 
-| AI Analyzeer for Crypto Market       |
-| ------------------------------------ |
-| ![Image 1](assets/images/analze.png) |
+| AI Analyzeer for Crypto Market     |
+| ---------------------------------- |
+| ![Image 1](docs/images/analze.png) |
 
 ## 🏗️ System Diagrams
 

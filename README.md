@@ -19,64 +19,63 @@ Nara Wallet addresses key challenges in crypto adoption:
 
 Our solution introduces an AI-powered conversational wallet agent built on Fetch.ai and internet computer protocol, enabling users to create wallets, transfer funds, check balances, buy crypto with fiat, and compare market prices across chains through simple natural language interaction.
 
----
-
 ## 🏆 Features of Nara
 
-* **Crypto Asset Transfer**
-  Send coins such as BTC, ETH, and SOL to other wallet addresses with simple chat instructions. Includes network and address validation to minimize errors.
+- **Crypto Asset Transfer**
+  Send coins such as BTC, ETH, SOL, and SOL to other wallet addresses with simple chat instructions. Includes network and address validation to minimize errors.
 
-* **Wallet Address Creation**
-  Automatically generate new wallet addresses for multiple crypto assets, ready for sending and receiving.
+- **Wallet Address Creation**
+  The AI Agent automatically generates new wallet addresses for multiple crypto assets, ready to be used for sending and receiving.
 
-* **Receive Crypto Assets**
+- **Receive Crypto Assets**
   Easily request and display your wallet address so others can send you assets. Copy and share in just one click.
 
-* **Check Wallet Balance**
-  View real-time balances for each asset along with basic activity history to keep track of your funds.
+- **Check Wallet Balance**
+  View real time balances for each asset along with basic activity history to keep track of your funds.
 
-* **Buy Crypto (Stripe Payment)**
-  Purchase coins directly through integrated payment providers without leaving the conversation. Balances update automatically after confirmation.
+- **Buy Crypto (Stripe Payment)**
+  Purchase coins directly through integrated payment providers without leaving the conversation. Balance updates are handled automatically after confirmation.
 
-* **Crypto to Fiat Conversion**
-  Get instant exchange rates from crypto to fiat currencies such as USD and IDR, helping you understand the real value of your holdings.
+- **Crypto to Fiat Conversion**
+  Get instant exchange rates from crypto to fiat currencies such as USD and IDR, helping users understand the real value of their holdings.
 
-* **Cross-Market Price Comparison (AI)**
+- **Cross Market Price Comparison (AI)**
   Compare coin prices across multiple sources including CoinGecko, CoinMarketCap, and Coinbase. The system highlights the most competitive option in real time.
 
-* **AI-Powered Trade Cost Prediction & Recommendation**
-  Nara goes beyond simple price comparison. Our AI predicts the true execution cost of a trade, factoring in market dynamics like slippage and liquidity.
-  For example, if you ask *“What’s the best market to sell 1 BTC?”*, Nara won’t just show the highest advertised price — it will recommend the exchange where you’ll actually receive the most money after execution.
+- **AI Based Best Price Recommendation**
+  AI recommends the most favorable market for buying or selling coins based on live price comparison data.
 
-  This is powered by a continuously trained machine learning model.
+### 🤖 How Our AI Works (White-Box View):
 
-  **How Our AI Works (White-Box View):**
+- **Real-Time Data Ingestion**: Constantly pulls live order book data and recent trade history from major exchanges (Binance, Kraken, Coinbase, etc.).
+- **Advanced Feature Engineering**: Extracts 30+ market microstructure features, including:
 
-  * **Real-Time Data Ingestion**: Constantly pulls live order book data and recent trade history from major exchanges (Binance, Kraken, Coinbase, etc.).
-  * **Advanced Feature Engineering**: Extracts 30+ market microstructure features, including:
+  - _Liquidity & Depth_: Volume available at different price levels.
+  - _Market Volatility_: Recent price fluctuations and trade frequency.
+  - _Order Book Imbalance_: Ratio of buy-to-sell pressure.
+  - _Price Impact Slope_: Sensitivity of price to large orders.
 
-    * *Liquidity & Depth*: Volume available at different price levels.
-    * *Market Volatility*: Recent price fluctuations and trade frequency.
-    * *Order Book Imbalance*: Ratio of buy-to-sell pressure.
-    * *Price Impact Slope*: Sensitivity of price to large orders.
-  * **Realistic Trade Simulation**: Builds a proprietary dataset by simulating thousands of trades under live market conditions, modeling slippage, partial fills, and exchange-specific factors.
-  * **Predictive Modeling**: Uses LightGBM to predict slippage percentages, highlighting the most influential features driving trade cost.
+- **Realistic Trade Simulation**: Builds a proprietary dataset by simulating thousands of trades under live market conditions, modeling slippage, partial fills, and exchange-specific factors.
+- **Predictive Modeling**: Uses LightGBM to predict slippage percentages, highlighting the most influential features driving trade cost.
 
-  **What the AI Prioritizes:**  
-  Our model has learned that the most critical predictors of final trade cost are:  
+#### What the AI Prioritizes:
 
-  - **Order Size (Fiat Value)** – Larger trades relative to market depth have the strongest impact on slippage.  
-  - **Spread Percentage** – The gap between buy and sell prices significantly affects execution efficiency.  
-  - **Size vs. Spread Ratio & Volatility Spread** – How order size interacts with market volatility and spread conditions.  
-  - **Order Book Depth** – Availability of liquidity across different levels (e.g., top 1 level, top 10 levels, and 5–10 depth ratios).  
+Our model has learned that the most critical predictors of final trade cost are:
 
-  Other factors such as trade volume, order book imbalance, and depth utilization still contribute, but with less influence compared to the above.  
+- **Order Size (Fiat Value)** – Larger trades relative to market depth have the strongest impact on slippage.
+- **Spread Percentage** – The gap between buy and sell prices significantly affects execution efficiency.
+- **Size vs. Spread Ratio & Volatility Spread** – How order size interacts with market volatility and spread conditions.
+- **Order Book Depth** – Availability of liquidity across different levels (e.g., top 1 level, top 10 levels, and 5–10 depth ratios).
 
-  ![AI Feature Importance](docs/images/feature_importance_lightgbm.png)
+Other factors such as trade volume, order book imbalance, and depth utilization still contribute, but with less influence compared to the above.
 
+| Lightgbm Features                                       | Model Comparison                              |
+| ------------------------------------------------------- | --------------------------------------------- |
+| ![Image 1](docs/images/feature_importance_lightgbm.png) | ![Image 2](docs/images/model_comparison.jpeg) |
 
----
-
+| Validation Plot                              |
+| -------------------------------------------- |
+| ![Image 1](docs/images/validation_plot.jpeg) |
 
 ## 🚀 Build and Deployment Instructions
 

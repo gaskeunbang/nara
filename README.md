@@ -145,6 +145,12 @@ INFO: [Nara Wallet Agent]: Agent inspector available at https://agentverse.ai/in
   ```
 - Using Ngrok or any Tunneling Software, Create secure https endpoint and set it up as a webhook in Stripe dashboard under the webhook section.
 
+## 🏗️ System Diagrams
+
+Below is the Nara Wallet sequence diagram illustrating the flow for the Buy Crypto with Fiat feature, integrated with Stripe payment and webhook.
+
+![Nara Buy Diagram](docs/images/buy-diagram.png)
+
 ## 📎 Demo App
 
 | Nara Wallet Landing Page            | Agent Welcome Message               |
@@ -162,12 +168,6 @@ INFO: [Nara Wallet Agent]: Agent inspector available at https://agentverse.ai/in
 | AI Analyzeer for Crypto Market      |
 | ----------------------------------- |
 | ![Image 1](docs/images/analyze.png) |
-
-## 🏗️ System Diagrams
-
-Below is the Nara Wallet sequence diagram illustrating the flow for the Buy Crypto with Fiat feature, integrated with Stripe payment and webhook.
-
-![Nara Buy Diagram](docs/images/buy-diagram.png)
 
 ## 📃 License
 

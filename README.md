@@ -186,6 +186,8 @@ Here are sample chat commands you can send to the Nara Wallet Agent:
 
 ## 🏗️ Architecture
 
+![Nara Architecture Diagram](docs/images/architecture.png)
+
 Below is the Nara Wallet sequence diagram illustrating the flow for the Buy Crypto with Fiat feature, integrated with Stripe payment and webhook.
 
 ![Nara Buy Diagram](docs/images/buy-diagram.png)

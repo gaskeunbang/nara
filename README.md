@@ -11,8 +11,8 @@
     <img src="docs/images/cover.png" alt="Nara Cover">
   </a>
 
-  <h3 align="center">Nara Wallet – AI First Wallet for Everyone</h3>
-<p align="center">
+  <h3 align="left">Nara Wallet – AI First Wallet for Everyone</h3>
+<p align="left">
   Nara Wallet is an AI powered conversational wallet agent built to simplify crypto adoption and make digital asset management accessible to everyone. It is designed to work seamlessly across multiple blockchain networks including Bitcoin, Ethereum, Solana, Internet Computer, and others. Nara Wallet allows users to create wallets, send and receive funds, check balances, buy crypto with fiat, and compare market prices in real time, all through natural language interaction without the need to understand technical blockchain commands. The platform integrates a smart assistant interface where users can simply type everyday instructions such as "I want to buy Bitcoin" or "Show me my balance" and instantly get actionable results. Built on top of the Fetch.ai agent framework, Nara Wallet leverages autonomous AI agents to process requests intelligently and deliver secure, real time interaction
 
 </p>

@@ -245,18 +245,21 @@ function App() {
                   {featureCards.map((card, idx) => (
                     <div
                       key={idx}
-                      className="relative z-30 rounded-[10px] bg-[#8F82C70D] shadow-[0_10px_30px_rgba(0,0,0,0.35)] overflow-hidden w-[299px] h-[300px] flex flex-col"
+                      className="group relative z-30 rounded-[10px] bg-[#8F82C70D] shadow-[0_10px_30px_rgba(0,0,0,0.35)] overflow-hidden w-[299px] h-[300px] flex flex-col transition-all duration-300 ease-out transform-gpu hover:-translate-y-1 hover:scale-[1.02] hover:shadow-[0_16px_40px_rgba(0,0,0,0.45)] hover:ring-1 hover:ring-[#8F82C7]/40 focus-visible:ring-1 focus-visible:ring-[#8F82C7]/50"
                     >
-                      <div className="">
+                      {/* subtle glow overlay on hover */}
+                      <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(300px_140px_at_50%_0%,rgba(143,130,199,0.18),transparent)]" />
+
+                      <div className="overflow-hidden">
                         <img
                           src={card.image}
                           alt="feature visual"
-                          className="w-full h-[150px] rounded-[8px] object-cover pointer-events-none select-none"
+                          className="w-full h-[150px] rounded-[8px] object-cover pointer-events-none select-none transition-transform duration-300 ease-out group-hover:scale-[1.05]"
                         />
                       </div>
                       <div className="px-4 pb-3 mt-4">
                         <h3 className="text-white text-[24px] leading-snug font-normal">{card.title}</h3>
-                        <p className="mt-3 text-[14px] font-normal leading-relaxed text-white/70">{card.description}</p>
+                        <p className="mt-3 text-[14px] font-normal leading-relaxed text-white/70 group-hover:text-white/85 transition-colors duration-300">{card.description}</p>
                       </div>
                     </div>
                   ))}

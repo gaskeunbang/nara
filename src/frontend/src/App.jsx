@@ -13,46 +13,64 @@ function App() {
   const glowEffect = `${basePath}assets/glow-effect.png`;
   const macbook = `${basePath}assets/macbook.png`;
   const substract = `${basePath}assets/substract2.png`;
+  const featureImages = {
+    transfer: `${basePath}assets/transfer.png`,
+    receive: `${basePath}assets/receive.png`,
+    createWallet: `${basePath}assets/create-wallet.png`,
+    balance: `${basePath}assets/balance.png`,
+    fiat: `${basePath}assets/fiat.png`,
+    convert: `${basePath}assets/convert.png`,
+    comparation: `${basePath}assets/comparation.png`,
+    bestPrice: `${basePath}assets/best-price.png`,
+  };
   const featureCards = [
     {
       title: 'Crypto Transfers',
       description:
         'Send BTC, ETH, and SOL with fee preview, ETA, network validation, QR support, and real-time tracking.',
+      image: featureImages.transfer,
     },
     {
       title: 'Receive Address',
       description:
         'Instantly surface your address and QR with clear “correct network only” reminders and memo/tag hints when needed.',
+      image: featureImages.receive,
     },
     {
       title: 'Create Wallet Addresses',
       description:
         'Generate new addresses for BTC, ETH, and SOL. Labeled and ready to receive or send without technical friction',
+      image: featureImages.createWallet,
     },
     {
       title: 'Real-time Balances',
       description:
         'See time-stamped balances for each asset in a single, easy snapshot—no app-hopping.',
+      image: featureImages.balance,
     },
     {
       title: 'Buy with Fiat',
       description:
         'Purchase crypto without leaving chat. Every cost is shown upfront; coins are delivered to your address on success.',
+      image: featureImages.fiat,
     },
     {
       title: 'Crypto → Fiat Conversion',
       description:
         'Get live BTC/ETH/SOL rates to USD/IDR (and more) so you always know what your holdings are worth.',
+      image: featureImages.convert,
     },
     {
       title: 'Market Price Comparison',
       description:
         'Compare CoinGecko, CoinMarketCap, and Coinbase. View deltas and the most competitive price at a glance.',
+      image: featureImages.comparation,
     },
     {
       title: 'Price Recommendation',
       description:
         'Let the AI suggest the cheapest/trusted market for your purchase, with a short rationale and confidence indicator.',
+      image: featureImages.bestPrice,
     },
   ];
   return (
@@ -227,11 +245,11 @@ function App() {
                   {featureCards.map((card, idx) => (
                     <div
                       key={idx}
-                      className="relative z-30 rounded-[10px] bg-[#151515] ring-1 ring-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)] overflow-hidden w-[299px] h-[300px] flex flex-col"
+                      className="relative z-30 rounded-[10px] bg-[#8F82C70D] shadow-[0_10px_30px_rgba(0,0,0,0.35)] overflow-hidden w-[299px] h-[300px] flex flex-col"
                     >
                       <div className="">
                         <img
-                          src={imageWrapper}
+                          src={card.image}
                           alt="feature visual"
                           className="w-full h-[150px] rounded-[8px] object-cover pointer-events-none select-none"
                         />

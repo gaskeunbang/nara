@@ -8,5 +8,8 @@
   "icp_ledger_canister": {
     "local": "ryjl3-tyaaa-aaaaa-aaaba-cai",
     "ic": "ryjl3-tyaaa-aaaaa-aaaba-cai"
+  },
+  "frontend": {
+    "ic": "vhtak-4yaaa-aaaam-aejya-cai"
   }
 }

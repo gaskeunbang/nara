@@ -9,6 +9,7 @@ from config.settings import ASI1_BASE_URL, ASI1_HEADERS
 
 # Setup agent
 AGENT_NAME = 'Nara Wallet Agent'
+location = {"latitude": -6.9175, "longitude": 107.6191}
 agent = Agent(
     name=AGENT_NAME,
     seed="nara-wallet-agent",
@@ -16,6 +17,7 @@ agent = Agent(
     mailbox=True,
     publish_agent_details=True,
 )
+agent.location = {"latitude": -6.9175, "longitude": 107.6191}
 
 # Attach protocols to agent
 health_protocol = create_health_protocol(agent, AGENT_NAME)

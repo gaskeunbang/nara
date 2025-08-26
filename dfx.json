@@ -62,7 +62,6 @@
       "wasm": "https://github.com/internet-computer-protocol/evm-rpc-canister/releases/latest/download/evm_rpc.wasm.gz"
     },
     "frontend": {
-      "dependencies": ["wallet"],
       "source": ["src/frontend/dist"],
       "type": "assets",
       "workspace": "nara_frontend"

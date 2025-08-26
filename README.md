@@ -66,13 +66,13 @@ Our model has learned that the most critical predictors of final trade cost are:
 
 Other factors such as trade volume, order book imbalance, and depth utilization still contribute, but with less influence compared to the above.
 
-| Lightgbm Features                                       | Model Comparison                              |
-| ------------------------------------------------------- | --------------------------------------------- |
-| ![Image 1](docs/images/feature_importance_lightgbm.png) | ![Image 2](docs/images/model_comparison.jpeg) |
+| Lightgbm Features                                                                                                          | Model Comparison                                                                                                 |
+| -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| ![Image 1](https://raw.githubusercontent.com/gaskeunbang/nara/refs/heads/main/docs/images/feature_importance_lightgbm.png) | ![Image 2](https://raw.githubusercontent.com/gaskeunbang/nara/refs/heads/main/docs/images/model_comparison.jpeg) |
 
-| Validation Plot                              |
-| -------------------------------------------- |
-| ![Image 1](docs/images/validation_plot.jpeg) |
+| Validation Plot                                                                                                 |
+| --------------------------------------------------------------------------------------------------------------- |
+| ![Image 1](https://raw.githubusercontent.com/gaskeunbang/nara/refs/heads/main/docs/images/validation_plot.jpeg) |
 
 ## 🚀 Build and Deployment Instructions
 
@@ -124,14 +124,13 @@ To run the demo, create a .env file (or copy from .env.example) and add the foll
   ```sh
    cd fetch/
    python -m venv venv
-   source venv/bin/active
+   source venv/bin/active (mac os)
   ```
 
 - Install depedencies
 
   ```sh
-   python -m venv venv
-   source venv/bin/active
+    pip install -r requirements.txt
   ```
 
 - Runing agent
@@ -183,29 +182,29 @@ Here are sample chat commands you can send to the Nara Wallet Agent:
 
 ## 🏗️ Architecture
 
-![Nara Architecture Diagram](docs/images/architecture.png)
+![Nara Architecture Diagram](https://raw.githubusercontent.com/gaskeunbang/nara/refs/heads/main/docs/images/architecture.png)
 
 Below is the Nara Wallet sequence diagram illustrating the flow for the Buy Crypto with Fiat feature, integrated with Stripe payment and webhook.
 
-![Nara Buy Diagram](docs/images/buy-diagram.png)
+![Nara Buy Diagram](https://raw.githubusercontent.com/gaskeunbang/nara/refs/heads/main/docs/images/buy-diagram.png)
 
 ## 📎 Demo App
 
-| Nara Wallet Landing Page            | Agent Welcome Message               |
-| ----------------------------------- | ----------------------------------- |
-| ![Image 1](docs/images/landing.png) | ![Image 2](docs/images/welcome.png) |
+| Landing Page                                                                                            | Landing Page                                                                                            |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| ![Image 1](https://raw.githubusercontent.com/gaskeunbang/nara/refs/heads/main/docs/images/landing1.png) | ![Image 2](https://raw.githubusercontent.com/gaskeunbang/nara/refs/heads/main/docs/images/landing2.png) |
 
-| Check Balance                       | Transfer                             |
-| ----------------------------------- | ------------------------------------ |
-| ![Image 1](docs/images/balance.png) | ![Image 2](docs/images/transfer.png) |
+| Check Balance                                                                                          | Transfer                                                                                                |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| ![Image 1](https://raw.githubusercontent.com/gaskeunbang/nara/refs/heads/main/docs/images/balance.png) | ![Image 2](https://raw.githubusercontent.com/gaskeunbang/nara/refs/heads/main/docs/images/transfer.png) |
 
-| Buy Crypto                      | Check coin price                  |
-| ------------------------------- | --------------------------------- |
-| ![Image 1](docs/images/buy.png) | ![Image 2](docs/images/check.png) |
+| Buy Crypto                                                                                         | Check coin price                                                                                     |
+| -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| ![Image 1](https://raw.githubusercontent.com/gaskeunbang/nara/refs/heads/main/docs/images/buy.png) | ![Image 2](https://raw.githubusercontent.com/gaskeunbang/nara/refs/heads/main/docs/images/check.png) |
 
-| AI Analyzer for Crypto Market       |
-| ----------------------------------- |
-| ![Image 1](docs/images/analyze.png) |
+| Welcome Message                                                                                        | AI Analyzer for Crypto Market                                                                          |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| ![Image 1](https://raw.githubusercontent.com/gaskeunbang/nara/refs/heads/main/docs/images/welcome.png) | ![Image 2](https://raw.githubusercontent.com/gaskeunbang/nara/refs/heads/main/docs/images/analyze.png) |
 
 ## 🔮 Future Plan: The AI Gateway to Web3
 

@@ -1,5 +1,7 @@
 # Nara Wallet - AI First Wallet for Everyone
 
+![Nara Cover](https://raw.githubusercontent.com/gaskeunbang/nara/refs/heads/main/docs/images/cover.png)
+
 ![tag:innovationlab](https://img.shields.io/badge/innovationlab-3D8BD3)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![ICP](https://img.shields.io/badge/Internet_Computer-Protocol-blue.svg)](https://internetcomputer.org/)
@@ -21,8 +23,9 @@ Our solution introduces an AI-powered conversational wallet agent built on Fetch
 
 ## 📚 Complete Resources
 
-- Mainnet: https://vhtak-4yaaa-aaaam-aejya-cai.icp0.io/
+- Mainnet: https://vhtak-4yaaa-aaaam-aejya-cai.icp0.io
 - Video Demo: https://youtu.be/6vcqCsSTM34
+- Pitch Deck: https://drive.google.com/file/d/10aEkmPLzyxymrNKFT_06JMoB6IxJAQEv/view?usp=drive_link
 
 ## 🏆 Features of Nara
 

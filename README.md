@@ -23,7 +23,6 @@ Our solution introduces an AI-powered conversational wallet agent built on Fetch
 
 - Mainnet: https://vhtak-4yaaa-aaaam-aejya-cai.icp0.io/
 - Video Demo: https://youtu.be/6vcqCsSTM34
-- Pitch Deck: https://www.canva.com/design/DAGmaChTRQg/r4ECbK6TqtN8v37RNsSMPw/edit?utm_content=DAGmaChTRQg&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
 
 ## 🏆 Features of Nara
 

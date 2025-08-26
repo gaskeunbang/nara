@@ -206,13 +206,35 @@ Below is the Nara Wallet sequence diagram illustrating the flow for the Buy Cryp
 | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
 | ![Image 1](https://raw.githubusercontent.com/gaskeunbang/nara/refs/heads/main/docs/images/welcome.png) | ![Image 2](https://raw.githubusercontent.com/gaskeunbang/nara/refs/heads/main/docs/images/analyze.png) |
 
+Sip, aku bikin versi **Complex Features** dan **Challenges** khusus Nara Wallet biar match sama style yang kamu kasih tadi:
+
+---
+
+## 🔥 Complex Features Implemented
+
+**⛓ Cross-Chain Ledger Support**: Native integration with **Bitcoin, Ethereum, Solana, and ICP ledgers**, enabling balance checks, transfers, and unified wallet management across multiple blockchains.
+
+**💳 Stripe Payment Integration**: Seamless fiat-to-crypto flow by connecting to Stripe APIs, setting up secure webhooks, and linking confirmations directly to canister state.
+
+**🧠 AI Market Price Model**: Custom ML pipeline trained on live multi-exchange order book data, converted into **ONNX** format and deployed fully on-chain within an ICP canister for real-time inference.
+
+---
+
+## 💪 Challenges Faced During Hackathon
+
+**🔑 Manual Principal Identity Setup**
+
+**Challenge**: Since the hackathon marked one of the first collaborations with AI agents on ICP, there was no standard identity bridge. Principal IDs (derived from Internet Identity) had to be created manually using cryptographic algorithms (Ed25519) and embedded into the AI agent.
+
+**Solution**: Implemented a custom identity generation and signing mechanism inside the agent, allowing it to authenticate securely with ICP canisters despite the lack of direct tooling.
+
 ## 🔮 Future Plan: The AI Gateway to Web3
 
 Nara Wallet’s vision goes beyond simplifying crypto transactions. Our goal is to become the AI-first entry point for mainstream Web3 adoption, enabling anyone to access, manage, and grow their digital assets with confidence. By combining conversational AI with cross-chain infrastructure, Nara Wallet will expand from basic wallet functions into a comprehensive ecosystem of payments, trading, and intelligent financial guidance.
 
 Just as we simplify wallet creation and transactions today, in the future Nara will bring the same AI-powered simplicity to DeFi, NFTs, and cross-chain services—bridging the gap between complex blockchain systems and everyday users.
 
-### 📅 Phase 1 (Q4 2025) – Production Launch
+### 📅 Phase 1 – Production Launch
 
 - **🌍 ICP Mainnet Deployment:** Core wallet features live (create, transfer, receive, balances)
 
@@ -222,7 +244,7 @@ Just as we simplify wallet creation and transactions today, in the future Nara w
 
 - **📊 Basic Price Comparison:** Multi-market feed (CoinGecko, CoinMarketCap, Coinbase)
 
-### 📅 Phase 2 (2026) – Enhanced Intelligence
+### 📅 Phase 2 – Enhanced Intelligence
 
 - **⚡ Agent-to-Agent Collaboration:** Market insights via Fetch.ai agent network
 
@@ -232,7 +254,7 @@ Just as we simplify wallet creation and transactions today, in the future Nara w
 
 - **🌏 Multi-language Support:** English and Indonesian adoption
 
-### 📅 Phase 3 (2027) – Ecosystem Growth
+### 📅 Phase 3 – Ecosystem Growth
 
 - **⛓️ Cross-Canister Interoperability:** Support for ICP DeFi canisters and ICRC-1/ICRC-2 tokens
 

@@ -281,5 +281,5 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 - Aaron Joseph Karel Daimbani (Blockchain Developer)
 - Arvin Taoran Anthaq (AI Agent Developer)
 - Tiyas Insania Dhikananda (UI/UX Designer)
-- Muhammad Fajar Mufid (Digital Business)
+- Arga Adolf Lumunon (Digital Business)
 - Farrel Haykal Al Giffari (Frontend Developer)
